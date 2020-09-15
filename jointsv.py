@@ -45,7 +45,7 @@ def generate_non_sv_records(record_list):
     return []
 
 
-def write_output(output_list, output_file_path, input_file_path_list):
+def write_output(output_list, output_file_path, sample_names):
     """
     Serialises the data into a VCF file.
 
@@ -54,7 +54,7 @@ def write_output(output_list, output_file_path, input_file_path_list):
     :return:
     """
     header = vcfpy.Header(lines=[],
-                          samples=vcfpy.SamplesInfos(input_file_path_list))
+                          samples=vcfpy.SamplesInfos(sample_names))
 
     writer = vcfpy.Writer.from_path(output_file_path, header)
 
@@ -78,16 +78,17 @@ def main(args):
     # First, read all the data and group the records by CHROM + POS
     print("Reading inputs...")
     records = read_records_from_files(input_file_path_list, chromosome_set)
+    sample_names = set([sample_name for (sample_name, _) in records.keys()])
 
     # Then process each group separately
-    print("Processing data...")
+    print("Processing", len(records), "groups from samples", sample_names, "...")
     output_list = []
     for key, colocated_records in records.items():
         output_list.extend(process_record_list(key, colocated_records))
 
     # Finally, write the output to a file
     print("Writing output...")
-    write_output(output_list, output_file_path, input_file_path_list)
+    write_output(output_list, output_file_path, sample_names)
 
 
 if __name__ == "__main__":
