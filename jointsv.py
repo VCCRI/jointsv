@@ -45,7 +45,11 @@ def write_output(output_list, output_file_path):
 
     writer = vcfpy.Writer.from_path(output_file_path, header)
 
-    for output_record in sort_elements(output_list):
+    # Sort the output by chromosome and position
+    sorting_function = lambda record: record.CHROM + "_" + str(record.POS)
+    output_list.sort(key=sorting_function)
+
+    for output_record in output_list:
         writer.write_record(output_record)
 
     writer.close()
