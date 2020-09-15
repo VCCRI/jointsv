@@ -42,10 +42,10 @@ def generate_sv_record(record_list):
 
 def generate_non_sv_records(record_list):
     # TODO
-    return []
+    return record_list  # TODO: this is not correct, we need to group these records anyway
 
 
-def write_output(output_list, output_file_path, sample_names):
+def write_output(output_list, output_file_path, sample_names_to_header):
     """
     Serialises the data into a VCF file.
 
@@ -53,8 +53,10 @@ def write_output(output_list, output_file_path, sample_names):
     :param output_file_path:
     :return:
     """
-    header = vcfpy.Header(lines=[],
-                          samples=vcfpy.SamplesInfos(sample_names))
+    assert len(sample_names_to_header) > 0, "At least one sample is required"
+    header = list(sample_names_to_header.values())[0]
+    # header = vcfpy.Header(lines=[],
+    #                       samples=vcfpy.SamplesInfos(sample_names.keys()))
 
     writer = vcfpy.Writer.from_path(output_file_path, header)
 
@@ -63,6 +65,8 @@ def write_output(output_list, output_file_path, sample_names):
     output_list.sort(key=sorting_function)
 
     for output_record in output_list:
+        # Convert the IDs back to strings, because tuples cannot be serialised by VCFPy
+        output_record.ID = [str(output_record.ID[0]) + "_" + str(output_record.ID[1])]
         writer.write_record(output_record)
 
     writer.close()
@@ -77,17 +81,17 @@ def main(args):
 
     # First, read all the data and group the records by CHROM + POS
     print("Reading inputs...")
-    (records, sample_names) = read_records_from_files(input_file_path_list, chromosome_set)
+    (records, sample_names_to_header) = read_records_from_files(input_file_path_list, chromosome_set)
 
     # Then process each group separately
-    print("Processing", len(records), "groups from samples", sample_names, "...")
+    print("Processing", len(records), "groups from samples", sample_names_to_header.keys(), "...")
     output_list = []
     for key, colocated_records in records.items():
         output_list.extend(process_record_list(key, colocated_records))
 
     # Finally, write the output to a file
     print("Writing output...")
-    write_output(output_list, output_file_path, sample_names)
+    write_output(output_list, output_file_path, sample_names_to_header)
 
 
 if __name__ == "__main__":
