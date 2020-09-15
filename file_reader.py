@@ -12,7 +12,8 @@ def read_records_from_files(file_path_list, chromosome_set):
             if chromosome_set is None or record.CHROM in chromosome_set:
                 assert len(record.ALT) == 1, "Only records with exactly 1 ALT are supported"
                 min_pos = min(record.POS, record.ALT[0].mate_pos)
-                key = record.CHROM + "_" + str(min_pos)
+                key = (record.CHROM, min_pos)
+                record.ID = (file_path, record.ID)
                 multi_map[key].append(record)
         reader.close()
 
