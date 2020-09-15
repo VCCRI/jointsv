@@ -13,6 +13,7 @@ def main():
     for item in sort_elements(output_file_path):
         write_element(item, output_file)
 
+
 if __name__ == "__main__":
     main()
 
