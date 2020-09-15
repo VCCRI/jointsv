@@ -54,9 +54,8 @@ def write_output(output_list, output_file_path, sample_names_to_header):
     :return:
     """
     assert len(sample_names_to_header) > 0, "At least one sample is required"
-    header = list(sample_names_to_header.values())[0]
-    # header = vcfpy.Header(lines=[],
-    #                       samples=vcfpy.SamplesInfos(sample_names.keys()))
+    header = list(sample_names_to_header.values())[0].copy()
+    header.samples = vcfpy.SamplesInfos(sample_names_to_header.keys())
 
     writer = vcfpy.Writer.from_path(output_file_path, header)
 
