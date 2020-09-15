@@ -9,6 +9,19 @@ def process_record_list(key, record_list):
     # Process SVs if possible
     # if not possible return raw BNDs
     print("TODO: process record list at", key, len(record_list))
+    if can_call_sv(key, record_list):
+        return generate_sv_record(record_list)
+    else:
+        return generate_non_sv_records(record_list)
+
+
+def can_call_sv(key, record_list):
+    # TODO
+    return False
+
+
+def generate_sv_record(record_list):
+    # TODO
     format = vcfpy.OrderedDict.fromkeys(["sample1"], "format1")
     calls = [vcfpy.Call(sample="sample1", data=vcfpy.OrderedDict.fromkeys("key1", "value1")),
              vcfpy.Call(sample="sample2", data=vcfpy.OrderedDict.fromkeys("key2", "value2"))
@@ -25,6 +38,11 @@ def process_record_list(key, record_list):
                           calls=calls)
 
     return [record]
+
+
+def generate_non_sv_records(record_list):
+    # TODO
+    return []
 
 
 def write_output(output_list, output_file_path):

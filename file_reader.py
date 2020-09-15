@@ -14,6 +14,7 @@ def read_records_from_files(file_path_list, chromosome_set):
                 min_pos = min(record.POS, record.ALT[0].mate_pos)
                 key = record.CHROM + "_" + str(min_pos)
                 multi_map[key].append(record)
+        reader.close()
 
     return multi_map
 
