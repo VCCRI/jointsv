@@ -1,6 +1,6 @@
 from collections import defaultdict
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, basename
 import vcfpy
 
 
@@ -11,9 +11,13 @@ def read_records_from_files(file_path_list, chromosome_set):
         for record in reader:
             if chromosome_set is None or record.CHROM in chromosome_set:
                 assert len(record.ALT) == 1, "Only records with exactly 1 ALT are supported"
-                min_pos = min(record.POS, record.ALT[0].mate_pos)
-                key = (record.CHROM, min_pos)
-                record.ID = (file_path, record.ID)
+                # Rewrite the ID to keep track of the sample where the data came from
+                record.ID = (basename(file_path), record.ID)
+
+                # Generate a key to group the records
+                key = (record.CHROM, min(record.POS, record.ALT[0].mate_pos))
+
+                # Put the record in a multimap grouped by its coordinates
                 multi_map[key].append(record)
         reader.close()
 
