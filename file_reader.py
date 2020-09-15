@@ -10,7 +10,9 @@ def read_records_from_files(file_path_list, chromosome_set):
         reader = vcfpy.Reader.from_path(file_path)
         for record in reader:
             if chromosome_set is None or record.CHROM in chromosome_set:
-                key = record.CHROM + str(record.POS)
+                assert len(record.ALT) == 1, "Only records with exactly 1 ALT are supported"
+                min_pos = min(record.POS, record.ALT[0].mate_pos)
+                key = record.CHROM + str(min_pos)
                 multi_map[key].append(record)
 
     return multi_map
