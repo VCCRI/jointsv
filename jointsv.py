@@ -1,5 +1,6 @@
-import argparse
 import sys
+from argument_parser import *
+
 from collections import defaultdict
 
 
@@ -24,19 +25,12 @@ def sort_elements(output_list):
 def write_element(item, file):
     #write element in file
     print("TODO")
-def parse_arguments(args):
-    parser = argparse.ArgumentParser(description='Process SVs and BNDs in Gridds Format')
-    parser.add_argument(dest='files', nargs='*',
-                        help='Space separated files')
-    parser.add_argument('-o', dest='outputFile',required=True,
-                        help='Path for the output file')
-    return parser.parse_args()
 
 def main(args):
     print("Starting Join SV")
     args = parse_arguments(args)
-    filePath = "/" #read from stdin
-    output_file_path = "/oputput.txt" # get from stdin
+    filePath = args.files #read from stdin
+    output_file_path = args.outputFile # get from stdin
     output_file = open_file(output_file_path)
     records = read_records_from_files(filePath)
     output_list = []
