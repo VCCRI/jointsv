@@ -6,14 +6,17 @@ import vcfpy
 
 def read_records_from_files(file_path_list, chromosome_set):
     multi_map = defaultdict(list)
+    sample_names = set()
     for file_path in collect_all_file_names(file_path_list):
+        sample_name = basename(file_path)
+        sample_names.add(sample_name)
         reader = vcfpy.Reader.from_path(file_path)
         for record in reader:
             if chromosome_set is None or record.CHROM in chromosome_set:
                 assert len(record.ALT) == 1, "Only records with exactly 1 ALT are supported"
 
                 # Rewrite the ID to keep track of the sample where the data came from
-                record.ID = (basename(file_path), record.ID)
+                record.ID = (sample_name, record.ID)
 
                 # Generate a key to group the records
                 key = (record.CHROM, min(record.POS, record.ALT[0].mate_pos))
@@ -22,7 +25,7 @@ def read_records_from_files(file_path_list, chromosome_set):
                 multi_map[key].append(record)
         reader.close()
 
-    return multi_map
+    return (multi_map, sample_names)
 
 
 def collect_all_file_names(file_path_list):

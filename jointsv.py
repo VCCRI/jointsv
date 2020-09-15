@@ -77,8 +77,7 @@ def main(args):
 
     # First, read all the data and group the records by CHROM + POS
     print("Reading inputs...")
-    records = read_records_from_files(input_file_path_list, chromosome_set)
-    sample_names = set([sample_name for (sample_name, _) in records.keys()])
+    (records, sample_names) = read_records_from_files(input_file_path_list, chromosome_set)
 
     # Then process each group separately
     print("Processing", len(records), "groups from samples", sample_names, "...")
