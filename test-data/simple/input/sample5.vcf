@@ -1,0 +1,24 @@
+##fileformat=VCFv4.2
+##ALT=<ID=INV,Description="Inversion">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##INFO=<ID=END,Number=1,Type=Integer,Description="Stop position of the interval">
+##INFO=<ID=EVENT,Number=1,Type=String,Description="ID of event associated to breakend">
+##INFO=<ID=REF,Number=1,Type=Integer,Description="Count of reads mapping across this breakend">
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
+##contig=<ID=chr11,length=135086622>
+##INFO=<ID=TRANCHE,Number=1,Type=String,Description="Quality category of GRIDSS structural variant calls determined using QUAL,AS,RAS. Values are LOW INTERMEDIATE HIGH">
+##INFO=<ID=TRANCHE2,Number=1,Type=String,Description="Quality category of GRIDSS structural variant calls determined using FILTER,SRQ,AS,RAS. Values are LOW INTERMEDIATE HIGH">
+##INFO=<ID=BNDVAF,Number=1,Type=Float,Description="VAF of this gridss-called BND calculated as (SR+RP+IC+AS)/(REF+SR+RP+IC+AS)">
+##FORMAT=<ID=TRANCHE,Number=1,Type=String,Description="Quality category of GRIDSS structural variant calls determined using QUAL,AS,RAS. Values are LOW INTERMEDIATE HIGH">
+##FORMAT=<ID=TRANCHE2,Number=1,Type=String,Description="Quality category of GRIDSS structural variant calls determined using FILTER,SRQ,AS,RAS. Values are LOW INTERMEDIATE HIGH">
+##FORMAT=<ID=BNDVAF,Number=1,Type=Float,Description="VAF of this gridss-called BND calculated as (SR+RP+IC+AS)/(REFPAIR+SR+RP+IC+AS)">
+##FORMAT=<ID=END,Number=1,Type=Integer,Description="End position of the variant described in this record">
+##FORMAT=<ID=INSSEQ,Number=.,Type=String,Description="Insertion sequence of structural variant, not including sequence marked as duplication">
+##FORMAT=<ID=POS,Number=1,Type=Integer,Description="Start position of the variant described in this record">
+##FORMAT=<ID=SVLEN,Number=.,Type=Integer,Description="Difference in length between REF and ALT alleles">
+##FORMAT=<ID=VAF,Number=1,Type=String,Description="VAF of this SV call, derived from BNDVAF values of BND calls used to call this SV">
+##INFO=<ID=INSSEQ,Number=.,Type=String,Description="Insertion sequence of structural variant, not including sequence marked as duplication">
+##INFO=<ID=VAF,Number=1,Type=String,Description="VAF of this SV call, derived from BNDVAF values of BND calls used to call this SV">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	SAMPLE5
+chr1	1005	s5bnd1	A	[chr11:2005[A	.	.	SVTYPE=BND;TRANCHE2=HIGH;BNDVAF=0.6	GT:TRANCHE2:VAF	.:.:.
+chr1	2005	s5bnd2	G	[chr11:1005[G	.	.	SVTYPE=BND;TRANCHE2=INTERMEDIATE;BNDVAF=0.7	GT:TRANCHE2:VAF	.:.:.
