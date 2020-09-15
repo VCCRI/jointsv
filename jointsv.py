@@ -55,11 +55,17 @@ def main(args):
     args = parse_arguments(args)
     file_path_list = args.files
     output_file_path = args.output_file
-    chromosome_list = args.chromosome_list
-    records = read_records_from_files(file_path_list, chromosome_list)
+    chromosome_set = set(args.chromosome_list) if args.chromosome_list else None
+
+    # First, read all the data and group the records by CHROM + POS
+    records = read_records_from_files(file_path_list, chromosome_set)
+
+    # Then process each group separately
     output_list = []
     for key, value in records.items():
         output_list.extend(process_record_list(value))
+
+    # Finally, write the output to a file
     write_output(output_list, output_file_path)
 
 
