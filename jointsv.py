@@ -27,11 +27,6 @@ def process_record_list(record_list):
     return [record]
 
 
-def sort_elements(output_list):
-    # sort the list before by start position
-    return output_list
-
-
 def write_output(output_list, output_file_path):
     """
     Serialises the data into a VCF file.
