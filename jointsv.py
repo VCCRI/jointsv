@@ -1,5 +1,36 @@
+
+from collections import defaultdict
+
 def main():
-    print("Hello World!")
+    print("Starting Join SV")
+    filePath = "/" #read from stdin
+    output_file_path = "/oputput.txt" # get from stdin
+    output_file = open_file(output_file_path)
+    records = read_records_from_files()
+    output_list = []
+    for key,value in records.items():
+        output_list.append(process_record_list(value))
+    for item in sort_elements(output_file_path):
+        write_element(item, output_file)
 
 if __name__ == "__main__":
     main()
+
+def open_file(output_file_path):
+    #open file
+
+def read_records_from_files(filePath):
+    # ...
+    return defaultdict(list)
+
+def process_record_list(record_list):
+    # Create as many columns as samples
+    # Process SVs if possible
+    # if not possible return raw BNDs
+
+def sort_elements(output_list):
+    #sort the list before by start position
+    return output_list
+
+def write_element(item, file):
+    #write element in file
