@@ -4,11 +4,11 @@ from file_reader import read_records_from_files
 import vcfpy
 
 
-def process_record_list(record_list):
+def process_record_list(key, record_list):
     # Create as many columns as samples
     # Process SVs if possible
     # if not possible return raw BNDs
-    print("TODO: process record list", len(record_list))
+    print("TODO: process record list at", key, len(record_list))
     format = vcfpy.OrderedDict.fromkeys(["sample1"], "format1")
     calls = [vcfpy.Call(sample="sample1", data=vcfpy.OrderedDict.fromkeys("key1", "value1")),
              vcfpy.Call(sample="sample2", data=vcfpy.OrderedDict.fromkeys("key2", "value2"))
@@ -58,14 +58,17 @@ def main(args):
     chromosome_set = set(args.chromosome_list) if args.chromosome_list else None
 
     # First, read all the data and group the records by CHROM + POS
+    print("Reading inputs...")
     records = read_records_from_files(file_path_list, chromosome_set)
 
     # Then process each group separately
+    print("Processing data...")
     output_list = []
-    for key, value in records.items():
-        output_list.extend(process_record_list(value))
+    for key, colocated_records in records.items():
+        output_list.extend(process_record_list(key, colocated_records))
 
     # Finally, write the output to a file
+    print("Writing output...")
     write_output(output_list, output_file_path)
 
 
