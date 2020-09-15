@@ -1,0 +1,2 @@
+vcfpy == 0.13.3
+pysam == 0.16.0.1  # required by vcfpy

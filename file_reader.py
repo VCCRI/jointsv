@@ -1,20 +1,16 @@
 from collections import defaultdict
 from os import listdir
 from os.path import isfile, join
+import vcfpy
 
 
 def read_records_from_files(file_path_list, chromosome_list):
     multi_map = defaultdict(list)
     for file_path in collect_all_file_names(file_path_list):
-        print(file_path)
-        # reader = vcfpy.Reader.from_path(file_path)
-        # for record in reader:
-        #     if not record.is_snv():
-        #         continue
-        #     line = [record.CHROM, record.POS, record.ID, record.REF]
-        #     line += [record.ALT]
-        #     line += [call.data.get('GT') or './.' for call in record.calls]
-        #     print('\t'.join(map(str, line)))
+        reader = vcfpy.Reader.from_path(file_path)
+        for record in reader:
+            key = record.CHROM + str(record.POS)   # TODO: use the minimum of the positions
+            multi_map[key].append(record)
 
     return multi_map
 
