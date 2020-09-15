@@ -19,7 +19,8 @@ def read_records_from_files(file_path_list, chromosome_set):
                 record.ID = (sample_name, record.ID)
 
                 # Generate a key to group the records
-                key = (record.CHROM, min(record.POS, record.ALT[0].mate_pos))
+                min_pos = min(record.POS, record.ALT[0].mate_pos) if isinstance(record.ALT, vcfpy.BreakEnd) else record.POS
+                key = (record.CHROM, min_pos)
 
                 # Put the record in a multimap grouped by its coordinates
                 multi_map[key].append(record)
