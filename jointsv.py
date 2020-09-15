@@ -45,7 +45,7 @@ def generate_non_sv_records(record_list):
     return []
 
 
-def write_output(output_list, output_file_path):
+def write_output(output_list, output_file_path, input_file_path_list):
     """
     Serialises the data into a VCF file.
 
@@ -54,12 +54,12 @@ def write_output(output_list, output_file_path):
     :return:
     """
     header = vcfpy.Header(lines=[],
-                          samples=vcfpy.SamplesInfos(["sample1", "sample2"]))
+                          samples=vcfpy.SamplesInfos(input_file_path_list))
 
     writer = vcfpy.Writer.from_path(output_file_path, header)
 
     # Sort the output by chromosome and position
-    sorting_function = lambda record: record.CHROM + "_" + str(record.POS)
+    sorting_function = lambda record: (record.CHROM, record.POS)
     output_list.sort(key=sorting_function)
 
     for output_record in output_list:
@@ -71,13 +71,13 @@ def write_output(output_list, output_file_path):
 def main(args):
     print("Starting JointSV")
     args = parse_arguments(args)
-    file_path_list = args.files
+    input_file_path_list = args.files
     output_file_path = args.output_file
     chromosome_set = set(args.chromosome_list) if args.chromosome_list else None
 
     # First, read all the data and group the records by CHROM + POS
     print("Reading inputs...")
-    records = read_records_from_files(file_path_list, chromosome_set)
+    records = read_records_from_files(input_file_path_list, chromosome_set)
 
     # Then process each group separately
     print("Processing data...")
@@ -87,7 +87,7 @@ def main(args):
 
     # Finally, write the output to a file
     print("Writing output...")
-    write_output(output_list, output_file_path)
+    write_output(output_list, output_file_path, input_file_path_list)
 
 
 if __name__ == "__main__":
