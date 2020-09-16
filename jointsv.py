@@ -4,14 +4,14 @@ from collections import defaultdict
 from argument_parser import parse_arguments
 from file_reader import read_records_from_files
 from record_helper import *
-import time
+import logging
 
 
 def process_record_list(key, record_list, sample_names_to_header):
     # Create as many columns as samples
     # Process SVs if possible
     # if not possible return raw BNDs
-    print("TODO: process record list at", key, len(record_list))
+    logging.info("TODO: process %d records list at %s", len(record_list), str(key))
     creates_sv = False
     candidates = []
     for record in record_list:
@@ -214,29 +214,28 @@ def get_header(sample_names):
 
 
 def main(args):
-    print("Starting JointSV")
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s')
+    logging.info("Starting JointSV")
     args = parse_arguments(args)
     input_file_path_list = args.files
     output_file_path = args.output_file
     chromosome_set = set(args.chromosome_list) if args.chromosome_list else None
 
     # First, read all the data and group the records by CHROM + POS
-    print("Reading inputs...")
-    start_time = time.time()
+    logging.info("Reading %d input files", len(input_file_path_list))
     (records, sample_names_to_header) = read_records_from_files(input_file_path_list, chromosome_set)
-    print('Inputs loaded in {:.1f} seconds'.format(time.time()-start_time))
+    logging.info("%d samples loaded", len(sample_names_to_header.keys()))
 
     # Then process each group separately
-    print("Processing", len(records), "groups from samples", sample_names_to_header.keys(), "...")
-    start_time = time.time()
+    logging.info("Processing %d groups from samples %s", len(records), sample_names_to_header.keys())
     output_list = []
     for key, colocated_records in records.items():
         output_list.extend(process_record_list(key, colocated_records, sample_names_to_header))
-    print('Groups processed in {:.1f} seconds'.format(time.time()-start_time))
 
     # Finally, write the output to a file
-    print("Writing output...")
+    logging.info("Writing output file at %s", output_file_path)
     write_output(output_list, output_file_path, sample_names_to_header)
+    logging.info("JointSV finished successfully")
 
 
 if __name__ == "__main__":
