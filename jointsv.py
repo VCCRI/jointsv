@@ -111,16 +111,19 @@ def generate_non_sv_records(colocated_records, sample_names):
     :return:
     """
 
-    # The colocated records need to be re-grouped based on their similary and actual position
-    subgrouping_function = lambda record: (record.CHROM, record.POS, record.REF, str(record.ALT)) # TODO: excluded INFO because otherwise they don't match
+    # The co-located records need to be re-grouped based not just on their true position (CHROM+POS) but also similarity
+    subgrouping_function = lambda record: (record.CHROM,
+                                           record.POS,
+                                           record.REF,
+                                           str(record.ALT),
+                                           record.INFO.get("END", None),
+                                           record.INFO.get("INSSEQ", None))
     records_grouped_by_all_coordinates = group_by(colocated_records, key=subgrouping_function)
 
     # Once the regrouping has happened, each group will generate exactly one line in the output. These lines
     # may be produced out-of-order, but we don't care because we will sort them later before generating the VCF.
     output = []
     for subkey, group in records_grouped_by_all_coordinates.items():
-        print("Processing", subkey, group)
-
         # Build a map to easily find the records by the sample name
         sample_names_to_record = {get_sample_name(record): record for record in group}
 
@@ -131,6 +134,11 @@ def generate_non_sv_records(colocated_records, sample_names):
         # Add a record to the output
         first_record_of_the_group = group[0]
         id_of_new_record = first_record_of_the_group.CHROM + "_" + str(first_record_of_the_group.POS)
+        info = vcfpy.OrderedDict()
+        if "END" in first_record_of_the_group.INFO:
+            info["END"] = first_record_of_the_group.INFO["END"] # by construction, all the grouped records have the same
+        if "INSSEQ" in first_record_of_the_group.INFO:
+            info["INSSEQ"] = first_record_of_the_group.INFO["INSSEQ"] # by construction, all the grouped records have the same
         output.append(vcfpy.Record(
             CHROM=first_record_of_the_group.CHROM,  # by construction, all the grouped records have the same
             POS=first_record_of_the_group.POS,  # by construction, all the grouped records have the same
@@ -139,7 +147,7 @@ def generate_non_sv_records(colocated_records, sample_names):
             ALT=first_record_of_the_group.ALT,  # by construction, all the grouped records have the same
             QUAL=None,  # FIXME: what to use here
             FILTER=[],  # FIXME: what to use here
-            INFO=vcfpy.OrderedDict(),  # FIXME: what to use here
+            INFO=info,  # FIXME: what to use here
             FORMAT=["GT", "TRANCHE2", "VAF"],
             calls=calls))
 
