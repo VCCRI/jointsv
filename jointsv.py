@@ -1,10 +1,11 @@
 import sys
 from argument_parser import parse_arguments
 from file_reader import read_records_from_files
+from collections import defaultdict
 import vcfpy
 
 
-def process_record_list(key, record_list):
+def process_record_list(key, record_list, sample_names_to_header):
     # Create as many columns as samples
     # Process SVs if possible
     # if not possible return raw BNDs
@@ -12,7 +13,7 @@ def process_record_list(key, record_list):
     if can_call_sv(key, record_list):
         return generate_sv_record(record_list)
     else:
-        return generate_non_sv_records(record_list)
+        return generate_non_sv_records(record_list, sample_names_to_header)
 
 
 def can_call_sv(key, record_list):
@@ -40,9 +41,47 @@ def generate_sv_record(record_list):
     return [record]
 
 
-def generate_non_sv_records(record_list):
-    # TODO
-    return record_list  # TODO: this is not correct, we need to group these records anyway
+def group_by(iterable, key):
+    result = defaultdict(list)
+    for item in iterable:
+        result[key(item)].append(item)
+    return result
+
+
+def generate_non_sv_records(record_list, sample_names_to_header):
+    def call_data(sample_name, sample_names_to_record):
+        data = vcfpy.OrderedDict.fromkeys(["GT", "TRANCHE2", "VAF"])
+        data.setdefault(".")
+        if sample_name in sample_names_to_record:
+            record = sample_names_to_record[sample_name]
+            data["GT"] = "42" # TODO: how to calculate this?
+            data["TRANCHE2"] = record.INFO["TRANCHE2"]
+            data["VAF"] = record.INFO["BNDVAF"]
+        return data
+
+    sample_names = sample_names_to_header.keys()
+    subkey_func = lambda record: (record.CHROM, record.POS, record.REF, str(record.ALT)) # TODO: excluded INFO because otherwise they don't match
+    format = ["GT", "TRANCHE2", "VAF"]
+    output = []
+    for subkey, group in group_by(record_list, key=subkey_func).items():
+        print("Processing", subkey, group)
+        sample_names_to_record = {record.ID[0]: record for record in group}
+
+        calls = [vcfpy.Call(sample=sample_name, data=call_data(sample_name, sample_names_to_record))
+                 for sample_name in sample_names]
+
+        record = vcfpy.Record(CHROM=group[0].CHROM, # by construction, all the grouped records have the same
+                              POS=group[0].POS, # by construction, all the grouped records have the same
+                              ID=[group[0].CHROM + "_" + str(group[0].POS)],
+                              REF=group[0].REF, # by construction, all the grouped records have the same
+                              ALT=group[0].ALT, # by construction, all the grouped records have the same
+                              QUAL=None, # FIXME: what to use here
+                              FILTER=[], # FIXME: what to use here
+                              INFO=vcfpy.OrderedDict(), # FIXME: what to use here
+                              FORMAT=format,
+                              calls=calls)
+        output.append(record)
+    return output
 
 
 def write_output(output_list, output_file_path, sample_names_to_header):
@@ -51,6 +90,7 @@ def write_output(output_list, output_file_path, sample_names_to_header):
 
     :param output_list:
     :param output_file_path:
+    :param sample_names_to_header:
     :return:
     """
     assert len(sample_names_to_header) > 0, "At least one sample is required"
@@ -65,7 +105,7 @@ def write_output(output_list, output_file_path, sample_names_to_header):
 
     for output_record in output_list:
         # Convert the IDs back to strings, because tuples cannot be serialised by VCFPy
-        output_record.ID = [str(output_record.ID[0]) + "_" + str(output_record.ID[1])]
+        # output_record.ID = [str(output_record.ID[0]) + "_" + str(output_record.ID[1])]
         writer.write_record(output_record)
 
     writer.close()
@@ -86,7 +126,7 @@ def main(args):
     print("Processing", len(records), "groups from samples", sample_names_to_header.keys(), "...")
     output_list = []
     for key, colocated_records in records.items():
-        output_list.extend(process_record_list(key, colocated_records))
+        output_list.extend(process_record_list(key, colocated_records, sample_names_to_header))
 
     # Finally, write the output to a file
     print("Writing output...")
