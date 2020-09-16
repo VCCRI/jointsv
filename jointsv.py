@@ -3,9 +3,11 @@ from collections import defaultdict
 
 from argument_parser import parse_arguments
 from file_reader import read_records_from_files
+from file_writer import write_output
 from record_helper import *
 import time
 from sv_detector import *
+import logging
 
 class BndComparisonResult:
     def __init__(self, is_sv, type,  initial_position, final_position):
@@ -20,16 +22,18 @@ def process_record_list(key, record_list, sample_names_to_header):
     # Process SVs if possible
     # if not possible return raw BNDs
     print("TODO: process record list at", key, len(record_list))
-    record_comparision_response = False
+    record_comparision_response = None
+    logging.info("TODO: process %d records list at %s", len(record_list), str(key))
+    creates_sv = False
     candidates = []
     for record in record_list:
         if is_trusted_record(record):
             record_comparision_response = compare_record_to_other_candidates(record, candidates)
-        if record_comparision_response.is_sv == True:
+        if record_comparision_response.is_sv:
             break
         else:
             candidates.append(record)
-    if (record_comparision_response.is_sv == True):
+    if record_comparision_response.is_sv:
         output = generate_sv_record(record_list)
     else:
         output = generate_non_sv_records(record_list, sample_names=sample_names_to_header.keys())
@@ -155,88 +159,29 @@ def generate_non_sv_records(colocated_records, sample_names):
     return output
 
 
-def write_output(output_list, output_file_path, sample_names_to_header):
-    """
-    Serialises the data into a VCF file.
-
-    :param output_list:
-    :param output_file_path:
-    :param sample_names_to_header:
-    :return:
-    """
-    assert len(sample_names_to_header) > 0, "At least one sample is required"
-
-    # Sort the output by chromosome and position
-    sorting_function = lambda record: (record.CHROM, record.POS)
-    output_list.sort(key=sorting_function)
-
-    header = get_header(sample_names_to_header.keys())
-
-    writer = vcfpy.Writer.from_path(output_file_path, header)
-
-    for output_record in output_list:
-        writer.write_record(output_record)
-
-    writer.close()
-
-
-def get_header(sample_names):
-    header = vcfpy.Header()
-
-    # INFO fields
-    header.add_info_line(vcfpy.OrderedDict(
-        ID="END",
-        Number=1,
-        Type="Integer",
-        Description="Stop position of the interval"))
-
-    # FORMAT fields
-    header.add_format_line(vcfpy.OrderedDict(
-        ID="GT",
-        Number=1,
-        Type="String",
-        Description="Genotype"))
-    header.add_format_line(vcfpy.OrderedDict(
-        ID="TRANCHE2",
-        Number=1,
-        Type="String",
-        Description="Quality category of GRIDSS structural variant calls determined using FILTER,SRQ,AS,RAS. Values are LOW INTERMEDIATE HIGH"))
-    header.add_format_line(vcfpy.OrderedDict(
-        ID="VAF",
-        Number=1,
-        Type="Float",
-        Description="VAF of this SV call, derived from BNDVAF values of BND calls used to call this SV"))
-
-    # Samples
-    header.samples = vcfpy.SamplesInfos(sample_names)
-
-    return header
-
-
 def main(args):
-    print("Starting JointSV")
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
+    logging.info("Starting JointSV")
+    start_time = time.time()
     args = parse_arguments(args)
     input_file_path_list = args.files
     output_file_path = args.output_file
     chromosome_set = set(args.chromosome_list) if args.chromosome_list else None
-
     # First, read all the data and group the records by CHROM + POS
-    print("Reading inputs...")
-    start_time = time.time()
+    logging.info("Reading %d input files", len(input_file_path_list))
     (records, sample_names_to_header) = read_records_from_files(input_file_path_list, chromosome_set)
     print('Inputs loaded in {:.1f} seconds'.format(time.time() - start_time))
+    sample_names = sample_names_to_header.keys()
 
     # Then process each group separately
-    print("Processing", len(records), "groups from samples", sample_names_to_header.keys(), "...")
-    start_time = time.time()
-    output_list = []
+    logging.info("Processing %d co-located groups from %d samples", len(records), len(sample_names))
+    output_records = []
     for key, colocated_records in records.items():
-        output_list.extend(process_record_list(key, colocated_records, sample_names_to_header))
-    print('Groups processed in {:.1f} seconds'.format(time.time() - start_time))
-
+        output_records.extend(process_record_list(key, colocated_records, sample_names_to_header))
     # Finally, write the output to a file
-    print("Writing output...")
-    write_output(output_list, output_file_path, sample_names_to_header)
+    logging.info("Writing %d records to output file '%s'", len(output_records), output_file_path)
+    write_output(output_records, output_file_path, sample_names)
+    logging.info("JointSV finished successfully")
 
 
 if __name__ == "__main__":
