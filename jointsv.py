@@ -76,6 +76,15 @@ def group_by(iterable, key):
     return result
 
 
+def get_gt(original_bndvat):
+    if original_bndvat > 0.85:
+        return "1/1"
+    elif original_bndvat < 0.15:
+        return "0/0"
+    else:
+        return "0/1"
+
+
 def get_sample_call(sample_name, original_record):
     """
     This function generates the Call for a single sample at at a given location
@@ -86,9 +95,10 @@ def get_sample_call(sample_name, original_record):
     call_data = vcfpy.OrderedDict.fromkeys(["GT", "TRANCHE2", "VAF"])
 
     if original_record:
-        call_data["GT"] = "0/1" # TODO: how to calculate this?
+        original_bndvaf = float(original_record.INFO["BNDVAF"])
+        call_data["GT"] = get_gt(original_bndvaf)
         call_data["TRANCHE2"] = get_tranche_2(original_record)
-        call_data["VAF"] = float(original_record.INFO["BNDVAF"])
+        call_data["VAF"] = original_bndvaf
 
     return vcfpy.Call(sample=sample_name, data=call_data)
 
