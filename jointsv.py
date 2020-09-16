@@ -22,9 +22,8 @@ def process_record_list(key, record_list, sample_names_to_header):
     # Create as many columns as samples
     # Process SVs if possible
     # if not possible return raw BNDs
-    print("TODO: process record list at", key, len(record_list))
     record_comparison_response = BndComparisonResult(False, None, None, None)
-    logging.info("TODO: process %d records list at %s", len(record_list), str(key))
+    logging.debug("Processing %d records list at position %s", len(record_list), str(key))
     candidates = []
     for record in record_list:
         if is_trusted_record(record):
@@ -80,7 +79,7 @@ def generate_sv_record(records, comparison_result, sample_names):
         POS=comparison_result.initial_position,  # by construction, all the grouped records have the same
         ID=[id_of_new_record],
         REF=first_record_of_the_group.REF,  # by construction, all the grouped records have the same
-        ALT=[],
+        ALT=[vcfpy.Substitution(type_=comparison_result.type, value='<{}>'.format(comparison_result.type))],
         QUAL=None,  # FIXME: what to use here
         FILTER=[],  # FIXME: what to use here
         INFO=info,
@@ -192,7 +191,7 @@ def generate_non_sv_records(colocated_records, sample_names):
 
 
 def main(args):
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
     logging.info("Starting JointSV")
     start_time = time.time()
     args = parse_arguments(args)
@@ -200,9 +199,7 @@ def main(args):
     output_file_path = args.output_file
     chromosome_set = set(args.chromosome_list) if args.chromosome_list else None
     # First, read all the data and group the records by CHROM + POS
-    logging.info("Reading %d input files", len(input_file_path_list))
     (records, sample_names_to_header) = read_records_from_files(input_file_path_list, chromosome_set)
-    print('Inputs loaded in {:.1f} seconds'.format(time.time() - start_time))
     sample_names = sample_names_to_header.keys()
 
     # Then process each group separately
