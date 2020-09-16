@@ -23,7 +23,7 @@ def process_record_list(key, record_list, sample_names_to_header):
     if (creates_sv == True):
         output = generate_sv_record(record_list)
     else:
-        output = generate_non_sv_records(record_list, sample_names_to_header)
+        output = generate_non_sv_records(record_list, sample_names=sample_names_to_header.keys())
     return output
 
 
@@ -84,18 +84,15 @@ def get_sample_call(sample_name, original_record):
     :return:
     """
     call_data = vcfpy.OrderedDict.fromkeys(["GT", "TRANCHE2", "VAF"])
-    # We may not have data in this group for all samples, so we fill the blanks with default values
-    call_data.setdefault(".")
     if original_record:
-        call_data["GT"] = "0" # TODO: how to calculate this?
+        call_data["GT"] = "0/1" # TODO: how to calculate this?
         call_data["TRANCHE2"] = original_record.INFO["TRANCHE2"]
         call_data["VAF"] = float(original_record.INFO["BNDVAF"])
 
     return vcfpy.Call(sample=sample_name, data=call_data)
 
 
-def generate_non_sv_records(record_list, sample_names_to_header):
-    sample_names = sample_names_to_header.keys()
+def generate_non_sv_records(record_list, sample_names):
     subkey_func = lambda record: (record.CHROM, record.POS, record.REF, str(record.ALT)) # TODO: excluded INFO because otherwise they don't match
     format = ["GT", "TRANCHE2", "VAF"]
     output = []
