@@ -1,6 +1,5 @@
 import vcfpy
 
-
 def get_tranche_2(record):
     return record.INFO["TRANCHE2"]
 
@@ -32,3 +31,12 @@ def are_pair_records(record1, record2):
             get_start_position(record1) == get_end_position(record2) and
             get_sample_name(record1) == get_sample_name(record2)
     )
+
+def get_orientation(record):
+    return record.ALT[0].orientation
+
+def get_mate_orientation(record):
+    return record.ALT[0].mate_orientation
+
+def get_sequence(record):
+    return record.ALT[0].sequence
