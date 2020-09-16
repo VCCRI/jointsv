@@ -1,6 +1,7 @@
 from collections import defaultdict
 from os import listdir
 from os.path import isfile, join, basename
+from record_helper import *
 import vcfpy
 
 
@@ -21,7 +22,9 @@ def read_records_from_files(file_path_list, chromosome_set):
                 record.ID = (sample_name, record.ID[0])
 
                 # Generate a key to group the records
-                min_pos = min(record.POS, record.ALT[0].mate_pos) if isinstance(record.ALT, vcfpy.BreakEnd) else record.POS
+                min_pos = get_start_position(record)
+                if not is_record_an_sv(record):
+                    min_pos = min(get_start_position(record), get_end_position(record))
                 key = (record.CHROM, min_pos)
 
                 # Put the record in a multimap grouped by its coordinates

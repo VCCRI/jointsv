@@ -3,6 +3,7 @@ from argument_parser import parse_arguments
 from file_reader import read_records_from_files
 from collections import defaultdict
 import vcfpy
+from record_helper import *
 
 
 def process_record_list(key, record_list, sample_names_to_header):
@@ -10,14 +11,41 @@ def process_record_list(key, record_list, sample_names_to_header):
     # Process SVs if possible
     # if not possible return raw BNDs
     print("TODO: process record list at", key, len(record_list))
-    if can_call_sv(key, record_list):
-        return generate_sv_record(record_list)
+    creates_sv = False
+    candidates = []
+    for record in record_list:
+        if is_trusted_record(record):
+            creates_sv = compare_record_to_other_candidates(record, candidates)
+        if creates_sv == True:
+            break
+        else:
+            candidates.append(record)
+    if (creates_sv == True):
+        output = generate_sv_record(record_list)
     else:
-        return generate_non_sv_records(record_list, sample_names_to_header)
+        output = generate_non_sv_records(record_list, sample_names_to_header)
+    return output
+
+
+def compare_record_to_other_candidates(record, candidates):
+    # TODO Some records will have the actual call in ALT, so we can't assume that mate_pos exists
+    # We know that start position is the same and that the record is trusted
+    for candidate_record in candidates:
+        if are_pair_records(record, candidate_record):
+            return True
+    return False
 
 
 def can_call_sv(key, record_list):
+    higher_level_calls = ["DUP:INS", "DUP:TANDEM", "DUP:INS", "DEL", "INDEL"]
     # TODO
+    can_call_sv = False
+    for record in record_list:
+        # If the record is called in its own merits in any sample <- Return true
+        print(record)
+        if record.ALT in higher_level_calls:
+            return True
+
     return False
 
 
@@ -67,7 +95,6 @@ def get_sample_call(sample_name, original_record):
 
 
 def generate_non_sv_records(record_list, sample_names_to_header):
-
     sample_names = sample_names_to_header.keys()
     subkey_func = lambda record: (record.CHROM, record.POS, record.REF, str(record.ALT)) # TODO: excluded INFO because otherwise they don't match
     format = ["GT", "TRANCHE2", "VAF"]
@@ -79,14 +106,14 @@ def generate_non_sv_records(record_list, sample_names_to_header):
         calls = [get_sample_call(sample_name, sample_names_to_record.get(sample_name, None))
                  for sample_name in sample_names]
 
-        record = vcfpy.Record(CHROM=group[0].CHROM, # by construction, all the grouped records have the same
-                              POS=group[0].POS, # by construction, all the grouped records have the same
+        record = vcfpy.Record(CHROM=group[0].CHROM,  # by construction, all the grouped records have the same
+                              POS=group[0].POS,  # by construction, all the grouped records have the same
                               ID=[group[0].CHROM + "_" + str(group[0].POS)],
-                              REF=group[0].REF, # by construction, all the grouped records have the same
-                              ALT=group[0].ALT, # by construction, all the grouped records have the same
-                              QUAL=None, # FIXME: what to use here
-                              FILTER=[], # FIXME: what to use here
-                              INFO=vcfpy.OrderedDict(), # FIXME: what to use here
+                              REF=group[0].REF,  # by construction, all the grouped records have the same
+                              ALT=group[0].ALT,  # by construction, all the grouped records have the same
+                              QUAL=None,  # FIXME: what to use here
+                              FILTER=[],  # FIXME: what to use here
+                              INFO=vcfpy.OrderedDict(),  # FIXME: what to use here
                               FORMAT=format,
                               calls=calls)
         output.append(record)
