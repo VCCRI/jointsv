@@ -1,5 +1,6 @@
 import sys
 from collections import defaultdict
+from statistics import mean
 
 from argument_parser import parse_arguments
 from file_reader import read_records_from_files
@@ -33,7 +34,7 @@ def process_record_list(key, record_list, sample_names_to_header):
         else:
             candidates.append(record)
     if record_comparison_response.is_sv:
-        output = generate_sv_record(record_list)
+        output = [generate_sv_record(record_list, record_comparison_response, sample_names=sample_names_to_header.keys())]
     else:
         output = generate_non_sv_records(record_list, sample_names=sample_names_to_header.keys())
     return output
@@ -50,25 +51,41 @@ def compare_record_to_other_candidates(record, candidates):
             return_obj.final_position = 2000
     return return_obj
 
-def generate_sv_record(record_list):
 
-    # TODO
-    # format = vcfpy.OrderedDict.fromkeys(["sample1"], "format1")
-    # calls = [vcfpy.Call(sample="sample1", data=vcfpy.OrderedDict.fromkeys("key1", "value1")),
-    #          vcfpy.Call(sample="sample2", data=vcfpy.OrderedDict.fromkeys("key2", "value2"))
-    #          ]
-    # record = vcfpy.Record(CHROM="chr1",
-    #                       POS=1000,
-    #                       ID=["idFoo"],
-    #                       REF="REF",
-    #                       ALT=[vcfpy.SymbolicAllele("ALT")],
-    #                       QUAL="QUAL",
-    #                       FILTER=["FILTER"],
-    #                       INFO=vcfpy.OrderedDict(),
-    #                       FORMAT=format,
-    #                       calls=calls)
+def generate_sv_record(records, comparison_result, sample_names):
+    """
+    This method generates a single SV record after a call has been made over a set of input records
+    :param records: the input records involved in the SV call
+    :param comparison_result:
+    :param sample_names:
+    :return:
+    """
 
-    return []  # TODO
+    # Build a map to easily find the records by the sample name. It can be multi-valued
+    sample_names_to_records = group_by(records, lambda record: get_sample_name(record))
+
+    # Generate calls for each sample in this group
+    calls = [get_sample_call(sample_name, sample_names_to_records.get(sample_name, None))
+             for sample_name in sample_names]
+
+    first_record_of_the_group = records[0]
+    chrom = first_record_of_the_group.CHROM
+    id_of_new_record = generate_id(chrom, comparison_result.initial_position)
+    info = vcfpy.OrderedDict()
+    info["SVTYPE"] = comparison_result.type
+    info["END"] = comparison_result.final_position
+
+    return vcfpy.Record(
+        CHROM=chrom,  # by construction, all the grouped records have the same
+        POS=comparison_result.initial_position,  # by construction, all the grouped records have the same
+        ID=[id_of_new_record],
+        REF=first_record_of_the_group.REF,  # by construction, all the grouped records have the same
+        ALT=[],
+        QUAL=None,  # FIXME: what to use here
+        FILTER=[],  # FIXME: what to use here
+        INFO=info,
+        FORMAT=["GT", "TRANCHE2", "VAF"],
+        calls=calls)
 
 
 def group_by(iterable, key):
@@ -87,22 +104,38 @@ def get_gt(original_bndvat):
         return "0/1"
 
 
-def get_sample_call(sample_name, original_record):
+def maximum_tranche(records):
+    tranches = set([get_tranche_2(record) for record in records])
+    if "HIGH" in tranches:
+        return "HIGH"
+    elif "INTERMEDIATE" in tranches:
+        return "INTERMEDIATE"
+    elif "LOW" in tranches:
+        return "LOW"
+    else:
+        return None
+
+
+def get_sample_call(sample_name, records):
     """
-    This function generates the Call for a single sample at at a given location
+    This function generates the Call for a single sample at at a given location, given a single record, multiple records or no record at all
     :param sample_name:
-    :param original_record:
+    :param records:
     :return:
     """
     call_data = vcfpy.OrderedDict.fromkeys(["GT", "TRANCHE2", "VAF"])
 
-    if original_record:
-        original_bndvaf = float(original_record.INFO["BNDVAF"])
-        call_data["GT"] = get_gt(original_bndvaf)
-        call_data["TRANCHE2"] = get_tranche_2(original_record)
-        call_data["VAF"] = original_bndvaf
+    if records:
+        average_vaf = mean([float(record.INFO["BNDVAF"]) for record in records])
+        call_data["GT"] = get_gt(average_vaf)
+        call_data["TRANCHE2"] = maximum_tranche(records)
+        call_data["VAF"] = average_vaf
 
     return vcfpy.Call(sample=sample_name, data=call_data)
+
+
+def generate_id(chrom, pos):
+    return chrom + "_" + str(pos)
 
 
 def generate_non_sv_records(colocated_records, sample_names):
@@ -127,15 +160,15 @@ def generate_non_sv_records(colocated_records, sample_names):
     output = []
     for subkey, group in records_grouped_by_all_coordinates.items():
         # Build a map to easily find the records by the sample name
-        sample_names_to_record = {get_sample_name(record): record for record in group}
+        sample_names_to_record = group_by(group, get_sample_name)
 
         # Generate calls for each sample in this group
-        calls = [get_sample_call(sample_name, sample_names_to_record.get(sample_name, None))
+        calls = [get_sample_call(sample_name, sample_names_to_record.get(sample_name, []))
                  for sample_name in sample_names]
 
         # Add a record to the output
         first_record_of_the_group = group[0]
-        id_of_new_record = first_record_of_the_group.CHROM + "_" + str(first_record_of_the_group.POS)
+        id_of_new_record = generate_id(first_record_of_the_group.CHROM, first_record_of_the_group.POS)
         info = vcfpy.OrderedDict()
         if "END" in first_record_of_the_group.INFO:
             info["END"] = first_record_of_the_group.INFO[
