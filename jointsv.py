@@ -6,9 +6,10 @@ from argument_parser import parse_arguments
 from file_reader import read_records_from_files
 from file_writer import write_output
 from record_helper import *
-import time
 from sv_detector import *
 import logging
+import resource
+
 
 class BndComparisonResult:
     def __init__(self, is_sv, type,  initial_position, final_position):
@@ -191,25 +192,34 @@ def generate_non_sv_records(colocated_records, sample_names):
 
 
 def main(args):
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
     logging.info("Starting JointSV")
-    start_time = time.time()
     args = parse_arguments(args)
     input_file_path_list = args.files
     output_file_path = args.output_file
     chromosome_set = set(args.chromosome_list) if args.chromosome_list else None
+
+    logging.debug("Resource usage: %s", str(resource.getrusage(resource.RUSAGE_SELF)))
+
     # First, read all the data and group the records by CHROM + POS
     (records, sample_names_to_header) = read_records_from_files(input_file_path_list, chromosome_set)
     sample_names = sample_names_to_header.keys()
+
+    logging.debug("Resource usage: %s", str(resource.getrusage(resource.RUSAGE_SELF)))
 
     # Then process each group separately
     logging.info("Processing %d co-located groups from %d samples", len(records), len(sample_names))
     output_records = []
     for key, colocated_records in records.items():
         output_records.extend(process_record_list(key, colocated_records, sample_names_to_header))
+
+    logging.debug("Resource usage: %s", str(resource.getrusage(resource.RUSAGE_SELF)))
+
     # Finally, write the output to a file
     logging.info("Writing %d records to output file '%s'", len(output_records), output_file_path)
     write_output(output_records, output_file_path, sample_names)
+
+    logging.debug("Resource usage: %s", str(resource.getrusage(resource.RUSAGE_SELF)))
     logging.info("JointSV finished successfully")
 
 
