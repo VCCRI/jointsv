@@ -14,7 +14,7 @@ def read_records_from_files(file_path_list, chromosome_set):
         sample_names_to_header[sample_name] = reader.header
         for record in reader:
             if chromosome_set is None or record.CHROM in chromosome_set:
-                assert len(record.ID) == 1, "Only records with exactly 1 ALT are supported"
+                assert len(record.ID) == 1, "Only records with exactly 1 ID are supported"
                 assert len(record.ALT) == 1, "Only records with exactly 1 ALT are supported"
 
                 # Rewrite the ID to keep track of the sample where the data came from
