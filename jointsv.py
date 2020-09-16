@@ -105,7 +105,8 @@ def generate_non_sv_records(colocated_records, sample_names):
     subgrouping_function = lambda record: (record.CHROM, record.POS, record.REF, str(record.ALT)) # TODO: excluded INFO because otherwise they don't match
     records_grouped_by_all_coordinates = group_by(colocated_records, key=subgrouping_function)
 
-    # Once the regrouping has happened, each group will generate a single line in the output
+    # Once the regrouping has happened, each group will generate exactly one line in the output. These lines
+    # may be produced out-of-order, but we don't care because we will sort them later before generating the VCF.
     output = []
     for subkey, group in records_grouped_by_all_coordinates.items():
         print("Processing", subkey, group)
@@ -118,12 +119,14 @@ def generate_non_sv_records(colocated_records, sample_names):
                  for sample_name in sample_names]
 
         # Add a record to the output
+        first_record_of_the_group = group[0]
+        id_of_new_record = first_record_of_the_group.CHROM + "_" + str(first_record_of_the_group.POS)
         output.append(vcfpy.Record(
-            CHROM=group[0].CHROM,  # by construction, all the grouped records have the same
-            POS=group[0].POS,  # by construction, all the grouped records have the same
-            ID=[group[0].CHROM + "_" + str(group[0].POS)],
-            REF=group[0].REF,  # by construction, all the grouped records have the same
-            ALT=group[0].ALT,  # by construction, all the grouped records have the same
+            CHROM=first_record_of_the_group.CHROM,  # by construction, all the grouped records have the same
+            POS=first_record_of_the_group.POS,  # by construction, all the grouped records have the same
+            ID=[id_of_new_record],
+            REF=first_record_of_the_group.REF,  # by construction, all the grouped records have the same
+            ALT=first_record_of_the_group.ALT,  # by construction, all the grouped records have the same
             QUAL=None,  # FIXME: what to use here
             FILTER=[],  # FIXME: what to use here
             INFO=vcfpy.OrderedDict(),  # FIXME: what to use here
@@ -143,24 +146,40 @@ def write_output(output_list, output_file_path, sample_names_to_header):
     :return:
     """
     assert len(sample_names_to_header) > 0, "At least one sample is required"
-    header = vcfpy.Header()
-    header.add_format_line(vcfpy.OrderedDict(ID="GT", Number=1, Type="String", Description="Genotype"))
-    header.add_format_line(vcfpy.OrderedDict(ID="TRANCHE2", Number=1, Type="String", Description="Quality category of GRIDSS structural variant calls determined using FILTER,SRQ,AS,RAS. Values are LOW INTERMEDIATE HIGH"))
-    header.add_format_line(vcfpy.OrderedDict(ID="VAF", Number=1, Type="Float", Description="VAF of this SV call, derived from BNDVAF values of BND calls used to call this SV"))
-    header.samples = vcfpy.SamplesInfos(sample_names_to_header.keys())
-
-    writer = vcfpy.Writer.from_path(output_file_path, header)
 
     # Sort the output by chromosome and position
     sorting_function = lambda record: (record.CHROM, record.POS)
     output_list.sort(key=sorting_function)
 
+    header = get_header(sample_names_to_header.keys())
+
+    writer = vcfpy.Writer.from_path(output_file_path, header)
+
     for output_record in output_list:
-        # Convert the IDs back to strings, because tuples cannot be serialised by VCFPy
-        # output_record.ID = [str(output_record.ID[0]) + "_" + str(output_record.ID[1])]
         writer.write_record(output_record)
 
     writer.close()
+
+
+def get_header(sample_names):
+    header = vcfpy.Header()
+    header.add_format_line(vcfpy.OrderedDict(
+        ID="GT",
+        Number=1,
+        Type="String",
+        Description="Genotype"))
+    header.add_format_line(vcfpy.OrderedDict(
+        ID="TRANCHE2",
+        Number=1,
+        Type="String",
+        Description="Quality category of GRIDSS structural variant calls determined using FILTER,SRQ,AS,RAS. Values are LOW INTERMEDIATE HIGH"))
+    header.add_format_line(vcfpy.OrderedDict(
+        ID="VAF",
+        Number=1,
+        Type="Float",
+        Description="VAF of this SV call, derived from BNDVAF values of BND calls used to call this SV"))
+    header.samples = vcfpy.SamplesInfos(sample_names)
+    return header
 
 
 def main(args):
