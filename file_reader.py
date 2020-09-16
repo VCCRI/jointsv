@@ -8,8 +8,11 @@ import logging
 
 def read_records_from_files(file_path_list, chromosome_set):
     colocated_records_multimap = defaultdict(list)
+    all_file_paths = collect_all_file_names(file_path_list)
+    logging.info("Reading %d input files", len(all_file_paths))
+
     sample_names_to_header = {}
-    for file_path in collect_all_file_names(file_path_list):
+    for file_path in all_file_paths:
         logging.debug("Reading file '%s'", file_path)
         reader = vcfpy.Reader.from_path(file_path)
 
