@@ -13,6 +13,7 @@ def read_records_from_files(file_path_list, chromosome_set):
     all_file_paths = collect_all_file_names(file_path_list)
     logging.info("Reading %d input files", len(all_file_paths))
 
+    record_count = 0
     sample_names_to_header = {}
     for file_path in all_file_paths:
         logging.debug("Reading file '%s'", file_path)
@@ -42,8 +43,12 @@ def read_records_from_files(file_path_list, chromosome_set):
 
                 # Put the record in a multimap grouped by its coordinates
                 colocated_records_multimap[record_location].append(record)
+                record_count += 1
         reader.close()
         gc.collect()
+
+    logging.debug("Found %d records from %d samples and grouped them in %d co-located groups",
+                  record_count, len(sample_names_to_header), len(colocated_records_multimap))
 
     return colocated_records_multimap, sample_names_to_header
 
