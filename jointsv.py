@@ -1,8 +1,8 @@
 import sys
+from collections import defaultdict
+
 from argument_parser import parse_arguments
 from file_reader import read_records_from_files
-from collections import defaultdict
-import vcfpy
 from record_helper import *
 
 
@@ -84,6 +84,7 @@ def get_sample_call(sample_name, original_record):
     :return:
     """
     call_data = vcfpy.OrderedDict.fromkeys(["GT", "TRANCHE2", "VAF"])
+
     if original_record:
         call_data["GT"] = "0/1" # TODO: how to calculate this?
         call_data["TRANCHE2"] = original_record.INFO["TRANCHE2"]
@@ -92,28 +93,43 @@ def get_sample_call(sample_name, original_record):
     return vcfpy.Call(sample=sample_name, data=call_data)
 
 
-def generate_non_sv_records(record_list, sample_names):
-    subkey_func = lambda record: (record.CHROM, record.POS, record.REF, str(record.ALT)) # TODO: excluded INFO because otherwise they don't match
-    format = ["GT", "TRANCHE2", "VAF"]
+def generate_non_sv_records(colocated_records, sample_names):
+    """
+    This function processes records that have not been used to call a SV.
+    :param colocated_records:
+    :param sample_names:
+    :return:
+    """
+
+    # The colocated records need to be re-grouped based on their similary and actual position
+    subgrouping_function = lambda record: (record.CHROM, record.POS, record.REF, str(record.ALT)) # TODO: excluded INFO because otherwise they don't match
+    records_grouped_by_all_coordinates = group_by(colocated_records, key=subgrouping_function)
+
+    # Once the regrouping has happened, each group will generate a single line in the output
     output = []
-    for subkey, group in group_by(record_list, key=subkey_func).items():
+    for subkey, group in records_grouped_by_all_coordinates.items():
         print("Processing", subkey, group)
+
+        # Build a map to easily find the records by the sample name
         sample_names_to_record = {record.ID[0]: record for record in group}
 
+        # Generate calls for each sample in this group
         calls = [get_sample_call(sample_name, sample_names_to_record.get(sample_name, None))
                  for sample_name in sample_names]
 
-        record = vcfpy.Record(CHROM=group[0].CHROM,  # by construction, all the grouped records have the same
-                              POS=group[0].POS,  # by construction, all the grouped records have the same
-                              ID=[group[0].CHROM + "_" + str(group[0].POS)],
-                              REF=group[0].REF,  # by construction, all the grouped records have the same
-                              ALT=group[0].ALT,  # by construction, all the grouped records have the same
-                              QUAL=None,  # FIXME: what to use here
-                              FILTER=[],  # FIXME: what to use here
-                              INFO=vcfpy.OrderedDict(),  # FIXME: what to use here
-                              FORMAT=format,
-                              calls=calls)
-        output.append(record)
+        # Add a record to the output
+        output.append(vcfpy.Record(
+            CHROM=group[0].CHROM,  # by construction, all the grouped records have the same
+            POS=group[0].POS,  # by construction, all the grouped records have the same
+            ID=[group[0].CHROM + "_" + str(group[0].POS)],
+            REF=group[0].REF,  # by construction, all the grouped records have the same
+            ALT=group[0].ALT,  # by construction, all the grouped records have the same
+            QUAL=None,  # FIXME: what to use here
+            FILTER=[],  # FIXME: what to use here
+            INFO=vcfpy.OrderedDict(),  # FIXME: what to use here
+            FORMAT=["GT", "TRANCHE2", "VAF"],
+            calls=calls))
+
     return output
 
 
