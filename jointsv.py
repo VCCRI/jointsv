@@ -147,7 +147,7 @@ def generate_non_sv_records(colocated_records, sample_names):
             ALT=first_record_of_the_group.ALT,  # by construction, all the grouped records have the same
             QUAL=None,  # FIXME: what to use here
             FILTER=[],  # FIXME: what to use here
-            INFO=info,  # FIXME: what to use here
+            INFO=info,
             FORMAT=["GT", "TRANCHE2", "VAF"],
             calls=calls))
 
