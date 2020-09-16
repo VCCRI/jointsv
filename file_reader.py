@@ -1,20 +1,24 @@
 from collections import defaultdict
 from os import listdir
-from os.path import isfile, join, basename
+from os.path import isdir, isfile, join
 from record_helper import *
 import vcfpy
 import logging
 
 
 def read_records_from_files(file_path_list, chromosome_set):
-    multi_map = defaultdict(list)
+    colocated_records_multimap = defaultdict(list)
     sample_names_to_header = {}
     for file_path in collect_all_file_names(file_path_list):
         logging.debug("Reading file '%s'", file_path)
         reader = vcfpy.Reader.from_path(file_path)
+
+        # Extract the sample name from the headers
         assert len(reader.header.samples.names) == 1, "Only records with exactly 1 sample are supported"
         sample_name = reader.header.samples.names[0]
         sample_names_to_header[sample_name] = reader.header
+
+        # Process each record in the file
         for record in reader:
             if chromosome_set is None or record.CHROM in chromosome_set:
                 assert len(record.ID) == 1, "Only records with exactly 1 ID are supported"
@@ -23,32 +27,30 @@ def read_records_from_files(file_path_list, chromosome_set):
                 # Rewrite the ID to keep track of the sample where the data came from
                 record.ID = (sample_name, record.ID[0])
 
-                # Generate a key to group the records
+                # Identify the location of the record so they can be grouped by co-located records. Note the
+                # position is not necessarily the one in the input BND, but it could be the end position if
+                # it references a previous position.
                 min_pos = get_start_position(record)
                 if not is_record_an_sv(record):
                     min_pos = min(get_start_position(record), get_end_position(record))
-                key = (record.CHROM, min_pos)
+                record_location = (record.CHROM, min_pos)
 
                 # Put the record in a multimap grouped by its coordinates
-                multi_map[key].append(record)
+                colocated_records_multimap[record_location].append(record)
         reader.close()
 
-    return multi_map, sample_names_to_header
+    return colocated_records_multimap, sample_names_to_header
 
 
 def collect_all_file_names(file_path_list):
     files = []
     for file_path in file_path_list:
-        if is_file_path_a_directory(file_path):
+        if isdir(file_path):
             files.extend(read_all_file_names_from_directory(file_path))
         else:
             files.append(file_path)
     return files
 
 
-def is_file_path_a_directory(file_path):
-    return file_path.endswith('/')
-
-
 def read_all_file_names_from_directory(directory_path):
-    return [directory_path + f for f in listdir(directory_path) if isfile(join(directory_path, f))]
+    return [join(directory_path, f) for f in listdir(directory_path) if isfile(join(directory_path, f))]
