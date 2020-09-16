@@ -12,3 +12,6 @@ def get_start_position(record):
 
 def get_end_position(record):
     return record.ALT[0].mate_pos
+
+def is_trusted_record(record):
+    return get_tranche_2(record) == "HIGH" or get_tranche_2(record) == "INTERMEDIATE"
