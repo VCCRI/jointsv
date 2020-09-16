@@ -9,6 +9,7 @@ from record_helper import *
 from sv_detector import *
 import logging
 import resource
+import gc
 
 
 class BndComparisonResult:
@@ -24,7 +25,6 @@ def process_record_list(key, record_list, sample_names_to_header):
     # Process SVs if possible
     # if not possible return raw BNDs
     record_comparison_response = BndComparisonResult(False, None, None, None)
-    logging.debug("Processing %d records list at position %s", len(record_list), str(key))
     candidates = []
     for record in record_list:
         if is_trusted_record(record):
@@ -199,13 +199,13 @@ def main(args):
     output_file_path = args.output_file
     chromosome_set = set(args.chromosome_list) if args.chromosome_list else None
 
-    logging.debug("Resource usage: %s", str(resource.getrusage(resource.RUSAGE_SELF)))
+    log_resource_consumption()
 
     # First, read all the data and group the records by CHROM + POS
     (records, sample_names_to_header) = read_records_from_files(input_file_path_list, chromosome_set)
     sample_names = sample_names_to_header.keys()
 
-    logging.debug("Resource usage: %s", str(resource.getrusage(resource.RUSAGE_SELF)))
+    log_resource_consumption()
 
     # Then process each group separately
     logging.info("Processing %d co-located groups from %d samples", len(records), len(sample_names))
@@ -213,14 +213,18 @@ def main(args):
     for key, colocated_records in records.items():
         output_records.extend(process_record_list(key, colocated_records, sample_names_to_header))
 
-    logging.debug("Resource usage: %s", str(resource.getrusage(resource.RUSAGE_SELF)))
+    log_resource_consumption()
 
     # Finally, write the output to a file
     logging.info("Writing %d records to output file '%s'", len(output_records), output_file_path)
     write_output(output_records, output_file_path, sample_names)
 
-    logging.debug("Resource usage: %s", str(resource.getrusage(resource.RUSAGE_SELF)))
+    log_resource_consumption()
     logging.info("JointSV finished successfully")
+
+
+def log_resource_consumption():
+    logging.debug("Resource usage: %s / GC stats: %s", str(resource.getrusage(resource.RUSAGE_SELF)), str(gc.get_stats()))
 
 
 if __name__ == "__main__":
