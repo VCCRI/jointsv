@@ -50,7 +50,8 @@ def group_by(iterable, key):
 
 def get_sample_call(sample_name, original_record):
     """
-    This function generates the call data for a single sample at at a given location
+    This function generates the Call for a single sample at at a given location
+    :param sample_name:
     :param original_record:
     :return:
     """
