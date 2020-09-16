@@ -48,16 +48,24 @@ def group_by(iterable, key):
     return result
 
 
+def get_sample_call(sample_name, original_record):
+    """
+    This function generates the call data for a single sample at at a given location
+    :param original_record:
+    :return:
+    """
+    call_data = vcfpy.OrderedDict.fromkeys(["GT", "TRANCHE2", "VAF"])
+    # We may not have data in this group for all samples, so we fill the blanks with default values
+    call_data.setdefault(".")
+    if original_record:
+        call_data["GT"] = "42" # TODO: how to calculate this?
+        call_data["TRANCHE2"] = original_record.INFO["TRANCHE2"]
+        call_data["VAF"] = original_record.INFO["BNDVAF"]
+
+    return vcfpy.Call(sample=sample_name, data=call_data)
+
+
 def generate_non_sv_records(record_list, sample_names_to_header):
-    def call_data(sample_name, sample_names_to_record):
-        data = vcfpy.OrderedDict.fromkeys(["GT", "TRANCHE2", "VAF"])
-        data.setdefault(".")
-        if sample_name in sample_names_to_record:
-            record = sample_names_to_record[sample_name]
-            data["GT"] = "42" # TODO: how to calculate this?
-            data["TRANCHE2"] = record.INFO["TRANCHE2"]
-            data["VAF"] = record.INFO["BNDVAF"]
-        return data
 
     sample_names = sample_names_to_header.keys()
     subkey_func = lambda record: (record.CHROM, record.POS, record.REF, str(record.ALT)) # TODO: excluded INFO because otherwise they don't match
@@ -67,7 +75,7 @@ def generate_non_sv_records(record_list, sample_names_to_header):
         print("Processing", subkey, group)
         sample_names_to_record = {record.ID[0]: record for record in group}
 
-        calls = [vcfpy.Call(sample=sample_name, data=call_data(sample_name, sample_names_to_record))
+        calls = [get_sample_call(sample_name, sample_names_to_record.get(sample_name, None))
                  for sample_name in sample_names]
 
         record = vcfpy.Record(CHROM=group[0].CHROM, # by construction, all the grouped records have the same
