@@ -5,6 +5,7 @@ from record_helper import *
 def is_record_an_sv(record):
     return get_alt_type(record) != "BND"
 
+
 def are_pair_records(record1, record2):
     return (
             get_end_position(record1) == get_start_position(record2) and

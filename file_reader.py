@@ -5,6 +5,7 @@ from record_helper import *
 from sv_detector import is_record_an_sv
 import vcfpy
 import logging
+import gc
 
 
 def read_records_from_files(file_path_list, chromosome_set):
@@ -35,13 +36,14 @@ def read_records_from_files(file_path_list, chromosome_set):
                 # position is not necessarily the one in the input BND, but it could be the end position if
                 # it references a previous position.
                 min_pos = get_start_position(record)
-                if not is_record_an_sv(record):
+                if get_end_position(record):
                     min_pos = min(get_start_position(record), get_end_position(record))
                 record_location = (record.CHROM, min_pos)
 
                 # Put the record in a multimap grouped by its coordinates
                 colocated_records_multimap[record_location].append(record)
         reader.close()
+        gc.collect()
 
     return colocated_records_multimap, sample_names_to_header
 
