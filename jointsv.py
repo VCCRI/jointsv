@@ -157,7 +157,7 @@ def generate_non_sv_records(colocated_records, sample_names):
 
 
 def main(args):
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s')
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
     logging.info("Starting JointSV")
     args = parse_arguments(args)
     input_file_path_list = args.files
@@ -171,13 +171,13 @@ def main(args):
 
     # Then process each group separately
     logging.info("Processing %d co-located groups from %d samples", len(records), len(sample_names))
-    output_list = []
+    output_records = []
     for key, colocated_records in records.items():
-        output_list.extend(process_record_list(key, colocated_records, sample_names_to_header))
+        output_records.extend(process_record_list(key, colocated_records, sample_names_to_header))
 
     # Finally, write the output to a file
-    logging.info("Writing output file at %s", output_file_path)
-    write_output(output_list, output_file_path, sample_names)
+    logging.info("Writing %d records to output file '%s'", len(output_records), output_file_path)
+    write_output(output_records, output_file_path, sample_names)
     logging.info("JointSV finished successfully")
 
 

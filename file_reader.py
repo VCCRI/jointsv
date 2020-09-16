@@ -10,7 +10,7 @@ def read_records_from_files(file_path_list, chromosome_set):
     multi_map = defaultdict(list)
     sample_names_to_header = {}
     for file_path in collect_all_file_names(file_path_list):
-        logging.info("Reading file %s", file_path)
+        logging.debug("Reading file '%s'", file_path)
         reader = vcfpy.Reader.from_path(file_path)
         assert len(reader.header.samples.names) == 1, "Only records with exactly 1 sample are supported"
         sample_name = reader.header.samples.names[0]
