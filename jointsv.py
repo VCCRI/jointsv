@@ -46,9 +46,9 @@ def compare_record_to_other_candidates(record, candidates):
     for candidate_record in candidates:
         if are_pair_records(record, candidate_record):
             return_obj.is_sv = True
-            return_obj.type = extract_sv_type_from_record_pair(candidate_record,record)
-            return_obj.initial_position = 1000
-            return_obj.final_position = 2000
+            return_obj.type = extract_sv_type_from_record_pair(candidate_record, record)
+            return_obj.initial_position = min(get_start_position(record), get_start_position(candidate_record))
+            return_obj.final_position = max(get_end_position(record), get_end_position(candidate_record))
     return return_obj
 
 

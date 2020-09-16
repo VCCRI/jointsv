@@ -6,6 +6,7 @@ def extract_sv_type_from_record_pair(record1, record2):
         return "DEL"
     if is_a_dup_tandem_sv(record1, record2):
         return "DUP:TANDEM"
+    return "UNKNOWN"
 
 
 # DUP:TANDEM	CHROM	POS	ALT
