@@ -35,6 +35,11 @@ def get_header(sample_names):
         Number=1,
         Type="Integer",
         Description="Stop position of the interval"))
+    header.add_info_line(vcfpy.OrderedDict(
+        ID="SVTYPE",
+        Number=1,
+        Type="String",
+        Description="Type of structural variant"))
 
     # FORMAT fields
     header.add_format_line(vcfpy.OrderedDict(
