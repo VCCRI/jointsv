@@ -22,18 +22,17 @@ def process_record_list(key, record_list, sample_names_to_header):
     # Process SVs if possible
     # if not possible return raw BNDs
     print("TODO: process record list at", key, len(record_list))
-    record_comparision_response = None
+    record_comparison_response = BndComparisonResult(False, None, None, None)
     logging.info("TODO: process %d records list at %s", len(record_list), str(key))
-    creates_sv = False
     candidates = []
     for record in record_list:
         if is_trusted_record(record):
-            record_comparision_response = compare_record_to_other_candidates(record, candidates)
-        if record_comparision_response.is_sv:
+            record_comparison_response = compare_record_to_other_candidates(record, candidates)
+        if record_comparison_response.is_sv:
             break
         else:
             candidates.append(record)
-    if record_comparision_response.is_sv:
+    if record_comparison_response.is_sv:
         output = generate_sv_record(record_list)
     else:
         output = generate_non_sv_records(record_list, sample_names=sample_names_to_header.keys())
