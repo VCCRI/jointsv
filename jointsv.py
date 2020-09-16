@@ -87,7 +87,7 @@ def get_sample_call(sample_name, original_record):
 
     if original_record:
         call_data["GT"] = "0/1" # TODO: how to calculate this?
-        call_data["TRANCHE2"] = original_record.INFO["TRANCHE2"]
+        call_data["TRANCHE2"] = get_tranche_2(original_record)
         call_data["VAF"] = float(original_record.INFO["BNDVAF"])
 
     return vcfpy.Call(sample=sample_name, data=call_data)
@@ -111,7 +111,7 @@ def generate_non_sv_records(colocated_records, sample_names):
         print("Processing", subkey, group)
 
         # Build a map to easily find the records by the sample name
-        sample_names_to_record = {record.ID[0]: record for record in group}
+        sample_names_to_record = {get_sample_name(record): record for record in group}
 
         # Generate calls for each sample in this group
         calls = [get_sample_call(sample_name, sample_names_to_record.get(sample_name, None))
