@@ -66,7 +66,7 @@ def generate_sv_record(record_list):
                           FORMAT=format,
                           calls=calls)
 
-    return [record]
+    return [] # TODO
 
 
 def group_by(iterable, key):
