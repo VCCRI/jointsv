@@ -4,6 +4,7 @@ from os.path import isdir, isfile, join
 from record_helper import *
 import vcfpy
 import logging
+import gc
 
 
 def read_records_from_files(file_path_list, chromosome_set):
@@ -41,6 +42,7 @@ def read_records_from_files(file_path_list, chromosome_set):
                 # Put the record in a multimap grouped by its coordinates
                 colocated_records_multimap[record_location].append(record)
         reader.close()
+        gc.collect()
 
     return colocated_records_multimap, sample_names_to_header
 

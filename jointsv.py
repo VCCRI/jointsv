@@ -224,7 +224,10 @@ def main(args):
 
 
 def log_resource_consumption():
-    logging.debug("Resource usage: %s / GC stats: %s", str(resource.getrusage(resource.RUSAGE_SELF)), str(gc.get_stats()))
+    logging.debug("Resource usage: %s / GC generations: %s / GC stats: %s",
+                  str(resource.getrusage(resource.RUSAGE_SELF)),
+                  str(gc.get_count()),
+                  str(gc.get_stats()))
 
 
 if __name__ == "__main__":
