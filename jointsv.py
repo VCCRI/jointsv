@@ -60,8 +60,8 @@ def get_sample_call(sample_name, original_record):
     call_data.setdefault(".")
     if original_record:
         call_data["GT"] = "0" # TODO: how to calculate this?
-        call_data["TRANCHE2"] = [original_record.INFO["TRANCHE2"]]
-        call_data["VAF"] = [str(original_record.INFO["BNDVAF"])] # TODO: remove the string conversion when we declare VAF as a float
+        call_data["TRANCHE2"] = original_record.INFO["TRANCHE2"]
+        call_data["VAF"] = float(original_record.INFO["BNDVAF"])
 
     return vcfpy.Call(sample=sample_name, data=call_data)
 
@@ -103,7 +103,10 @@ def write_output(output_list, output_file_path, sample_names_to_header):
     :return:
     """
     assert len(sample_names_to_header) > 0, "At least one sample is required"
-    header = list(sample_names_to_header.values())[0].copy()
+    header = vcfpy.Header()
+    header.add_format_line(vcfpy.OrderedDict(ID="GT", Number=1, Type="String", Description="Genotype"))
+    header.add_format_line(vcfpy.OrderedDict(ID="TRANCHE2", Number=1, Type="String", Description="Quality category of GRIDSS structural variant calls determined using FILTER,SRQ,AS,RAS. Values are LOW INTERMEDIATE HIGH"))
+    header.add_format_line(vcfpy.OrderedDict(ID="VAF", Number=1, Type="Float", Description="VAF of this SV call, derived from BNDVAF values of BND calls used to call this SV"))
     header.samples = vcfpy.SamplesInfos(sample_names_to_header.keys())
 
     writer = vcfpy.Writer.from_path(output_file_path, header)
