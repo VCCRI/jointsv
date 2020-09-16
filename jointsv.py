@@ -181,6 +181,15 @@ def write_output(output_list, output_file_path, sample_names_to_header):
 
 def get_header(sample_names):
     header = vcfpy.Header()
+
+    # INFO fields
+    header.add_info_line(vcfpy.OrderedDict(
+        ID="END",
+        Number=1,
+        Type="Integer",
+        Description="Stop position of the interval"))
+
+    # FORMAT fields
     header.add_format_line(vcfpy.OrderedDict(
         ID="GT",
         Number=1,
@@ -196,7 +205,10 @@ def get_header(sample_names):
         Number=1,
         Type="Float",
         Description="VAF of this SV call, derived from BNDVAF values of BND calls used to call this SV"))
+
+    # Samples
     header.samples = vcfpy.SamplesInfos(sample_names)
+
     return header
 
 
