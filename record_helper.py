@@ -31,3 +31,6 @@ def get_mate_orientation(record):
 
 def get_sequence(record):
     return record.ALT[0].sequence
+
+def get_alt_type(record):
+    return record.ALT[0].type
