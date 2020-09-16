@@ -2,6 +2,7 @@ from collections import defaultdict
 from os import listdir
 from os.path import isdir, isfile, join
 from record_helper import *
+from sv_detector import is_record_an_sv
 import vcfpy
 import logging
 
