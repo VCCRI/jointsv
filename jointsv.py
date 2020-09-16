@@ -5,6 +5,14 @@ from argument_parser import parse_arguments
 from file_reader import read_records_from_files
 from record_helper import *
 import time
+from sv_detector import *
+
+class BndComparisonResult:
+    def __init__(self, is_sv, type,  initial_position, final_position):
+        self.is_sv = is_sv
+        self.type = type
+        self.initial_position = initial_position
+        self.final_position = final_position
 
 
 def process_record_list(key, record_list, sample_names_to_header):
@@ -12,62 +20,52 @@ def process_record_list(key, record_list, sample_names_to_header):
     # Process SVs if possible
     # if not possible return raw BNDs
     print("TODO: process record list at", key, len(record_list))
-    creates_sv = False
+    record_comparision_response = False
     candidates = []
     for record in record_list:
         if is_trusted_record(record):
-            creates_sv = compare_record_to_other_candidates(record, candidates)
-        if creates_sv == True:
+            record_comparision_response = compare_record_to_other_candidates(record, candidates)
+        if record_comparision_response.is_sv == True:
             break
         else:
             candidates.append(record)
-    if (creates_sv == True):
+    if (record_comparision_response.is_sv == True):
         output = generate_sv_record(record_list)
     else:
         output = generate_non_sv_records(record_list, sample_names=sample_names_to_header.keys())
     return output
 
-
 def compare_record_to_other_candidates(record, candidates):
     # TODO Some records will have the actual call in ALT, so we can't assume that mate_pos exists
     # We know that start position is the same and that the record is trusted
+    return_obj = BndComparisonResult(False, None, None, None)
     for candidate_record in candidates:
         if are_pair_records(record, candidate_record):
-            return True
-    return False
-
-
-def can_call_sv(key, record_list):
-    higher_level_calls = ["DUP:INS", "DUP:TANDEM", "DUP:INS", "DEL", "INDEL"]
-    # TODO
-    can_call_sv = False
-    for record in record_list:
-        # If the record is called in its own merits in any sample <- Return true
-        print(record)
-        if record.ALT in higher_level_calls:
-            return True
-
-    return False
-
+            return_obj.is_sv = True
+            return_obj.type = "DEL"
+            return_obj.initial_position = 1000
+            return_obj.final_position = 2000
+    return return_obj
 
 def generate_sv_record(record_list):
-    # TODO
-    format = vcfpy.OrderedDict.fromkeys(["sample1"], "format1")
-    calls = [vcfpy.Call(sample="sample1", data=vcfpy.OrderedDict.fromkeys("key1", "value1")),
-             vcfpy.Call(sample="sample2", data=vcfpy.OrderedDict.fromkeys("key2", "value2"))
-             ]
-    record = vcfpy.Record(CHROM="chr1",
-                          POS=1000,
-                          ID=["idFoo"],
-                          REF="REF",
-                          ALT=[vcfpy.SymbolicAllele("ALT")],
-                          QUAL="QUAL",
-                          FILTER=["FILTER"],
-                          INFO=vcfpy.OrderedDict(),
-                          FORMAT=format,
-                          calls=calls)
 
-    return [] # TODO
+    # TODO
+    # format = vcfpy.OrderedDict.fromkeys(["sample1"], "format1")
+    # calls = [vcfpy.Call(sample="sample1", data=vcfpy.OrderedDict.fromkeys("key1", "value1")),
+    #          vcfpy.Call(sample="sample2", data=vcfpy.OrderedDict.fromkeys("key2", "value2"))
+    #          ]
+    # record = vcfpy.Record(CHROM="chr1",
+    #                       POS=1000,
+    #                       ID=["idFoo"],
+    #                       REF="REF",
+    #                       ALT=[vcfpy.SymbolicAllele("ALT")],
+    #                       QUAL="QUAL",
+    #                       FILTER=["FILTER"],
+    #                       INFO=vcfpy.OrderedDict(),
+    #                       FORMAT=format,
+    #                       calls=calls)
+
+    return []  # TODO
 
 
 def group_by(iterable, key):
@@ -137,9 +135,11 @@ def generate_non_sv_records(colocated_records, sample_names):
         id_of_new_record = first_record_of_the_group.CHROM + "_" + str(first_record_of_the_group.POS)
         info = vcfpy.OrderedDict()
         if "END" in first_record_of_the_group.INFO:
-            info["END"] = first_record_of_the_group.INFO["END"] # by construction, all the grouped records have the same
+            info["END"] = first_record_of_the_group.INFO[
+                "END"]  # by construction, all the grouped records have the same
         if "INSSEQ" in first_record_of_the_group.INFO:
-            info["INSSEQ"] = first_record_of_the_group.INFO["INSSEQ"] # by construction, all the grouped records have the same
+            info["INSSEQ"] = first_record_of_the_group.INFO[
+                "INSSEQ"]  # by construction, all the grouped records have the same
         output.append(vcfpy.Record(
             CHROM=first_record_of_the_group.CHROM,  # by construction, all the grouped records have the same
             POS=first_record_of_the_group.POS,  # by construction, all the grouped records have the same
@@ -224,7 +224,7 @@ def main(args):
     print("Reading inputs...")
     start_time = time.time()
     (records, sample_names_to_header) = read_records_from_files(input_file_path_list, chromosome_set)
-    print('Inputs loaded in {:.1f} seconds'.format(time.time()-start_time))
+    print('Inputs loaded in {:.1f} seconds'.format(time.time() - start_time))
 
     # Then process each group separately
     print("Processing", len(records), "groups from samples", sample_names_to_header.keys(), "...")
@@ -232,7 +232,7 @@ def main(args):
     output_list = []
     for key, colocated_records in records.items():
         output_list.extend(process_record_list(key, colocated_records, sample_names_to_header))
-    print('Groups processed in {:.1f} seconds'.format(time.time()-start_time))
+    print('Groups processed in {:.1f} seconds'.format(time.time() - start_time))
 
     # Finally, write the output to a file
     print("Writing output...")
