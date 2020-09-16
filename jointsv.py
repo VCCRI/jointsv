@@ -168,10 +168,9 @@ def main(args):
     logging.info("Reading %d input files", len(input_file_path_list))
     (records, sample_names_to_header) = read_records_from_files(input_file_path_list, chromosome_set)
     sample_names = sample_names_to_header.keys()
-    logging.info("%d samples loaded", len(sample_names))
 
     # Then process each group separately
-    logging.info("Processing %d groups from samples %s", len(records), sample_names)
+    logging.info("Processing %d co-located groups from %d samples", len(records), len(sample_names))
     output_list = []
     for key, colocated_records in records.items():
         output_list.extend(process_record_list(key, colocated_records, sample_names_to_header))
