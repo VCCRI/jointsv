@@ -50,7 +50,8 @@ def group_by(iterable, key):
 
 def get_sample_call(sample_name, original_record):
     """
-    This function generates the call data for a single sample at at a given location
+    This function generates the Call for a single sample at at a given location
+    :param sample_name:
     :param original_record:
     :return:
     """
@@ -58,9 +59,9 @@ def get_sample_call(sample_name, original_record):
     # We may not have data in this group for all samples, so we fill the blanks with default values
     call_data.setdefault(".")
     if original_record:
-        call_data["GT"] = "42" # TODO: how to calculate this?
-        call_data["TRANCHE2"] = original_record.INFO["TRANCHE2"]
-        call_data["VAF"] = original_record.INFO["BNDVAF"]
+        call_data["GT"] = "0" # TODO: how to calculate this?
+        call_data["TRANCHE2"] = [original_record.INFO["TRANCHE2"]]
+        call_data["VAF"] = [str(original_record.INFO["BNDVAF"])] # TODO: remove the string conversion when we declare VAF as a float
 
     return vcfpy.Call(sample=sample_name, data=call_data)
 
