@@ -3,7 +3,7 @@ from record_helper import *
 
 # Maybe name doesnt match the logic, but it's what we found so far
 def is_record_an_sv(record):
-    return isinstance(record.ALT, vcfpy.BreakEnd)
+    return isinstance(record.ALT[0], vcfpy.BreakEnd)
 
 
 def are_pair_records(record1, record2):
