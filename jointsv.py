@@ -4,6 +4,7 @@ from collections import defaultdict
 from argument_parser import parse_arguments
 from file_reader import read_records_from_files
 from record_helper import *
+import time
 
 
 def process_record_list(key, record_list, sample_names_to_header):
@@ -221,13 +222,17 @@ def main(args):
 
     # First, read all the data and group the records by CHROM + POS
     print("Reading inputs...")
+    start_time = time.time()
     (records, sample_names_to_header) = read_records_from_files(input_file_path_list, chromosome_set)
+    print('Inputs loaded in {:.1f} seconds'.format(time.time()-start_time))
 
     # Then process each group separately
     print("Processing", len(records), "groups from samples", sample_names_to_header.keys(), "...")
+    start_time = time.time()
     output_list = []
     for key, colocated_records in records.items():
         output_list.extend(process_record_list(key, colocated_records, sample_names_to_header))
+    print('Groups processed in {:.1f} seconds'.format(time.time()-start_time))
 
     # Finally, write the output to a file
     print("Writing output...")
