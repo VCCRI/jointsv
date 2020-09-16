@@ -167,17 +167,18 @@ def main(args):
     # First, read all the data and group the records by CHROM + POS
     logging.info("Reading %d input files", len(input_file_path_list))
     (records, sample_names_to_header) = read_records_from_files(input_file_path_list, chromosome_set)
-    logging.info("%d samples loaded", len(sample_names_to_header.keys()))
+    sample_names = sample_names_to_header.keys()
+    logging.info("%d samples loaded", len(sample_names))
 
     # Then process each group separately
-    logging.info("Processing %d groups from samples %s", len(records), sample_names_to_header.keys())
+    logging.info("Processing %d groups from samples %s", len(records), sample_names)
     output_list = []
     for key, colocated_records in records.items():
         output_list.extend(process_record_list(key, colocated_records, sample_names_to_header))
 
     # Finally, write the output to a file
     logging.info("Writing output file at %s", output_file_path)
-    write_output(output_list, output_file_path, sample_names_to_header)
+    write_output(output_list, output_file_path, sample_names)
     logging.info("JointSV finished successfully")
 
 

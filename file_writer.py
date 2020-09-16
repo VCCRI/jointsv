@@ -1,32 +1,37 @@
 import vcfpy
 
 
-def write_output(output_list, output_file_path, sample_names_to_header):
+def write_output(records, file_path, sample_names):
     """
     Serialises the data into a VCF file.
 
-    :param output_list:
-    :param output_file_path:
-    :param sample_names_to_header:
+    :param records:
+    :param file_path:
+    :param sample_names:
     :return:
     """
-    assert len(sample_names_to_header) > 0, "At least one sample is required"
+    assert len(sample_names) > 0, "At least one sample is required"
 
     # Sort the output by chromosome and position
     sorting_function = lambda record: (record.CHROM, record.POS)
-    output_list.sort(key=sorting_function)
+    records.sort(key=sorting_function)
 
-    header = get_header(sample_names_to_header.keys())
+    header = get_header(sample_names)
 
-    writer = vcfpy.Writer.from_path(output_file_path, header)
+    writer = vcfpy.Writer.from_path(file_path, header)
 
-    for output_record in output_list:
+    for output_record in records:
         writer.write_record(output_record)
 
     writer.close()
 
 
 def get_header(sample_names):
+    '''
+    Returns the header of the output VCF file
+    :param sample_names: iterable with the list of the sample names
+    :return: a vcfpy.Header
+    '''
     header = vcfpy.Header()
 
     # INFO fields
