@@ -79,7 +79,7 @@ def generate_sv_record(records, comparison_result, sample_names):
         POS=comparison_result.initial_position,  # by construction, all the grouped records have the same
         ID=[id_of_new_record],
         REF=first_record_of_the_group.REF,  # by construction, all the grouped records have the same
-        ALT=[],
+        ALT=[vcfpy.Substitution(type_=comparison_result.type, value='<{}>'.format(comparison_result.type))],
         QUAL=None,  # FIXME: what to use here
         FILTER=[],  # FIXME: what to use here
         INFO=info,
