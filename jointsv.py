@@ -14,7 +14,6 @@ import gc
 import vcfpy
 
 
-
 def process_record_list(key, record_list, sample_names):
     # Create as many columns as samples
     # Process SVs if possible
@@ -32,7 +31,8 @@ def process_record_list(key, record_list, sample_names):
         output = [generate_sv_record(record_list, record_comparison_response, sample_names)]
     else:
         output = generate_non_sv_records(record_list, sample_names)
-    return output
+
+    return output, record_comparison_response
 
 
 def compare_record_to_other_candidates(record, candidates):
@@ -84,8 +84,8 @@ def generate_sv_record(records, comparison_result, sample_names):
         ID=[id_of_new_record],
         REF=first_record_of_the_group.REF,  # by construction, all the grouped records have the same
         ALT=[vcfpy.Substitution(type_=comparison_result.svtype, value='<{}>'.format(comparison_result.svtype))],
-        QUAL=None,  # FIXME: what to use here
-        FILTER=[],  # FIXME: what to use here
+        QUAL=maximum_qual(records),
+        FILTER=["PASS"],
         INFO=info,
         FORMAT=["GT", "TRANCHE2", "VAF"],
         calls=calls)
@@ -105,6 +105,10 @@ def get_gt(original_bndvat):
         return "0/0"
     else:
         return "0/1"
+
+
+def maximum_qual(records):
+    return max([record.QUAL for record in records])
 
 
 def maximum_tranche(records):
@@ -185,8 +189,8 @@ def generate_non_sv_records(colocated_records, sample_names):
             ID=[id_of_new_record],
             REF=first_record_of_the_group.REF,  # by construction, all the grouped records have the same
             ALT=first_record_of_the_group.ALT,  # by construction, all the grouped records have the same
-            QUAL=None,  # FIXME: what to use here
-            FILTER=[],  # FIXME: what to use here
+            QUAL=maximum_qual(group),
+            FILTER=["PASS"],
             INFO=info,
             FORMAT=["GT", "TRANCHE2", "VAF"],
             calls=calls))
@@ -212,20 +216,27 @@ def main(args):
     # Then process each group separately
     logging.info("Processing %d co-located groups from %d samples", len(records), len(sample_names))
     positions = list(records.keys())
-    output_records = []
+    record_accumulator = []
+    sv_calls = 0
     for position in positions:
         # Instead of iterating over the .items() of the dictionary, we make a copy of the list of keys and iterate
         # over it. This makes it possible to delete entries from the dictionary as we go, reducing the memory
         # footprint.
         colocated_records = records[position]
-        output_records.extend(process_record_list(position, colocated_records, sample_names))
+        output_records, record_comparison_response = process_record_list(position, colocated_records, sample_names)
+        record_accumulator.extend(output_records)
         del records[position]
+        if record_comparison_response.is_sv:
+            sv_calls += 1
 
     log_resource_consumption()
 
     # Finally, write the output to a file
-    logging.info("Writing %d records to output file '%s'", len(output_records), output_file_path)
-    write_output(output_records, output_file_path, sample_names)
+    logging.info("Writing %d records to output file '%s', including %d SV calls",
+                 len(record_accumulator),
+                 output_file_path,
+                 sv_calls)
+    write_output(record_accumulator, output_file_path, sample_names)
 
     log_resource_consumption()
     logging.info("JointSV finished successfully")

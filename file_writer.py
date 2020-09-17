@@ -32,6 +32,8 @@ def get_header(sample_names):
     """
     header = vcfpy.Header()
 
+    header.add_line(vcfpy.HeaderLine(key="fileformat", value="VCFv4.3"))
+
     # INFO fields
     header.add_info_line(vcfpy.OrderedDict(
         ID="END",
