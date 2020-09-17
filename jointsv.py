@@ -7,18 +7,10 @@ from file_reader import read_records_from_files
 from file_writer import write_output
 from record_helper import *
 from sv_detector import *
+from BndComparisonResult import BndComparisonResult
 import logging
 import resource
 import gc
-
-
-class BndComparisonResult:
-    def __init__(self, is_sv, type,  initial_position, final_position):
-        self.is_sv = is_sv
-        self.type = type
-        self.initial_position = initial_position
-        self.final_position = final_position
-
 
 def process_record_list(key, record_list, sample_names):
     # Create as many columns as samples
