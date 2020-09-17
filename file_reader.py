@@ -36,8 +36,9 @@ def read_records_from_files(file_path_list, chromosome_set):
                 # position is not necessarily the one in the input BND, but it could be the end position if
                 # it references a previous position.
                 min_pos = get_start_position(record)
-                if get_end_position(record):
-                    min_pos = min(get_start_position(record), get_end_position(record))
+                end_position = get_end_position(record)
+                if not end_position is None:
+                    min_pos = min(get_start_position(record), end_position)
                 record_location = (record.CHROM, min_pos)
 
                 # Put the record in a multimap grouped by its coordinates
