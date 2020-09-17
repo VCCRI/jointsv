@@ -213,9 +213,15 @@ def main(args):
 
     # Then process each group separately
     logging.info("Processing %d co-located groups from %d samples", len(records), len(sample_names))
+    positions = list(records.keys())
     output_records = []
-    for key, colocated_records in records.items():
-        output_records.extend(process_record_list(key, colocated_records, sample_names))
+    for position in positions:
+        # Instead of iterating over the .items() of the dictionary, we make a copy of the list of keys and iterate
+        # over it. This makes it possible to delete entries from the dictionary as we go, reducing the memory
+        # footprint.
+        colocated_records = records[position]
+        output_records.extend(process_record_list(position, colocated_records, sample_names))
+        del records[position]
 
     log_resource_consumption()
 
