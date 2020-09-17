@@ -7,7 +7,17 @@ import logging
 import gc
 
 
-def read_records_from_files(file_path_list, chromosome_set):
+def read_records_from_files(file_path_list, chromosome_set=None):
+    """
+    This method parses the provided input files, filters the selected chromosomes, and returns the records grouped by
+    their location (where the location is not necessarily CHROM+POS, but it could be CHROM+END if the END is lower
+    than the POS).
+    The ID of each record if modified to make it a tuple (sample,original_id), in order to avoid clashes and also
+    be able to trace each record to their sample.
+    :param file_path_list: file paths to be read. If any of them is a directory, the files in the directory will be parsed (non recursively)
+    :param chromosome_set: the set of chromosomes of interest. Use None to read all of them
+    :return: a multimap where the key is the location (see note above), and the value is a list of all the records found at that location
+    """
     colocated_records_multimap = defaultdict(list)
     all_file_paths = collect_all_file_names(file_path_list)
     logging.info("Reading %d input files", len(all_file_paths))
@@ -24,7 +34,8 @@ def read_records_from_files(file_path_list, chromosome_set):
             sample_name = reader.header.samples.names[0]
             sample_names.append(sample_name)
 
-            # Process each record in the file
+            # Process each record in the file. Note that the VCFPy parser is a streaming parser. It does not hold
+            # the whole AST in memory, instead it goes record by record.
             for record in reader:
                 # Improvement idea: instead of filtering by chromosome after the whole record has been parsed,
                 # the filtering could happen before parsing the whole record. Of course that can be accomplished

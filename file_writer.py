@@ -5,10 +5,10 @@ def write_output(records, file_path, sample_names):
     """
     Serialises the data into a VCF file.
 
-    :param records:
-    :param file_path:
-    :param sample_names:
-    :return:
+    :param records: the list of records to serialise. No order is assumed.
+    :param file_path: path to the output file
+    :param sample_names: list of the sample names
+    :return: nothing
     """
     assert len(sample_names) > 0, "At least one sample is required"
 

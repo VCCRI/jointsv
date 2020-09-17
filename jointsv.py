@@ -11,6 +11,8 @@ from BndComparisonResult import BndComparisonResult
 import logging
 import resource
 import gc
+import vcfpy
+
 
 
 def process_record_list(key, record_list, sample_names):
@@ -39,13 +41,13 @@ def compare_record_to_other_candidates(record, candidates):
     for candidate_record in candidates:
         if is_record_an_sv(record):
             return_obj.is_sv = True
-            return_obj.type = get_alt_type(record)
+            return_obj.svtype = get_alt_type(record)
             return_obj.initial_position = get_start_position(record)
             return_obj.final_position = get_end_position(record)
             return_obj.insseq = get_insseq_from_sv(record)
         if are_pair_records(record, candidate_record):
             return_obj.is_sv = True
-            return_obj.type = extract_sv_type_from_record_pair(candidate_record, record)
+            return_obj.svtype = extract_sv_type_from_record_pair(candidate_record, record)
             return_obj.initial_position = min(get_start_position(record), get_start_position(candidate_record))
             return_obj.final_position = max(get_end_position(record), get_end_position(candidate_record))
             return_obj.insseq = get_insseq_from_bnds(return_obj.type, candidate_record, record)
@@ -72,7 +74,7 @@ def generate_sv_record(records, comparison_result, sample_names):
     chrom = first_record_of_the_group.CHROM
     id_of_new_record = generate_id(chrom, comparison_result.initial_position)
     info = vcfpy.OrderedDict()
-    info["SVTYPE"] = comparison_result.type
+    info["SVTYPE"] = comparison_result.svtype
     info["END"] = comparison_result.final_position
     if comparison_result.insseq is not None:
         info["INSSEQ"] = comparison_result.insseq
@@ -81,7 +83,7 @@ def generate_sv_record(records, comparison_result, sample_names):
         POS=comparison_result.initial_position,  # by construction, all the grouped records have the same
         ID=[id_of_new_record],
         REF=first_record_of_the_group.REF,  # by construction, all the grouped records have the same
-        ALT=[vcfpy.Substitution(type_=comparison_result.type, value='<{}>'.format(comparison_result.type))],
+        ALT=[vcfpy.Substitution(type_=comparison_result.svtype, value='<{}>'.format(comparison_result.svtype))],
         QUAL=None,  # FIXME: what to use here
         FILTER=[],  # FIXME: what to use here
         INFO=info,
