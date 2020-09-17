@@ -13,6 +13,7 @@ class ChromosomeFilter(io.TextIOWrapper):
     This class wraps a stream and modifies the behaviour of readline to only return the lines that are headers or
     are related to one of the chromosomes in the given set. This is done to prevent VCFPy from doing a heavy parsing
     of all the fields for the records that belong to irrelevant chromosomes.
+    This works because VCFPy's parser only uses the readline method.
     """
     def __init__(self, buffer, chromosome_set):
         io.TextIOWrapper.__init__(self, buffer)
@@ -37,7 +38,7 @@ class ChromosomeFilter(io.TextIOWrapper):
 
             # Continue processing the file
             line = self.buffer.readline()
-            
+
         return line
 
 
