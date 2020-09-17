@@ -50,7 +50,7 @@ def compare_record_to_other_candidates(record, candidates):
             return_obj.svtype = extract_sv_type_from_record_pair(candidate_record, record)
             return_obj.initial_position = min(get_start_position(record), get_start_position(candidate_record))
             return_obj.final_position = max(get_end_position(record), get_end_position(candidate_record))
-            return_obj.insseq = get_insseq_from_bnds(return_obj.type, candidate_record, record)
+            return_obj.insseq = get_insseq_from_bnds(return_obj.svtype, candidate_record, record)
     return return_obj
 
 
