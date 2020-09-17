@@ -11,6 +11,8 @@ from BndComparisonResult import BndComparisonResult
 import logging
 import resource
 import gc
+import vcfpy
+
 
 def process_record_list(key, record_list, sample_names):
     # Create as many columns as samples
@@ -31,6 +33,7 @@ def process_record_list(key, record_list, sample_names):
         output = generate_non_sv_records(record_list, sample_names)
     return output
 
+
 def compare_record_to_other_candidates(record, candidates):
     # TODO Some records will have the actual call in ALT, so we can't assume that mate_pos exists
     # We know that start position is the same and that the record is trusted
@@ -38,12 +41,12 @@ def compare_record_to_other_candidates(record, candidates):
     for candidate_record in candidates:
         if is_record_an_sv(record):
             return_obj.is_sv = True
-            return_obj.type = get_alt_type(record)
+            return_obj.svtype = get_alt_type(record)
             return_obj.initial_position = get_start_position(record)
             return_obj.final_position = get_end_position(record)
         if are_pair_records(record, candidate_record):
             return_obj.is_sv = True
-            return_obj.type = extract_sv_type_from_record_pair(candidate_record, record)
+            return_obj.svtype = extract_sv_type_from_record_pair(candidate_record, record)
             return_obj.initial_position = min(get_start_position(record), get_start_position(candidate_record))
             return_obj.final_position = max(get_end_position(record), get_end_position(candidate_record))
     return return_obj
@@ -69,7 +72,7 @@ def generate_sv_record(records, comparison_result, sample_names):
     chrom = first_record_of_the_group.CHROM
     id_of_new_record = generate_id(chrom, comparison_result.initial_position)
     info = vcfpy.OrderedDict()
-    info["SVTYPE"] = comparison_result.type
+    info["SVTYPE"] = comparison_result.svtype
     info["END"] = comparison_result.final_position
 
     return vcfpy.Record(
@@ -77,7 +80,7 @@ def generate_sv_record(records, comparison_result, sample_names):
         POS=comparison_result.initial_position,  # by construction, all the grouped records have the same
         ID=[id_of_new_record],
         REF=first_record_of_the_group.REF,  # by construction, all the grouped records have the same
-        ALT=[vcfpy.Substitution(type_=comparison_result.type, value='<{}>'.format(comparison_result.type))],
+        ALT=[vcfpy.Substitution(type_=comparison_result.svtype, value='<{}>'.format(comparison_result.svtype))],
         QUAL=None,  # FIXME: what to use here
         FILTER=[],  # FIXME: what to use here
         INFO=info,

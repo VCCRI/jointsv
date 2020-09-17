@@ -1,6 +1,3 @@
-import vcfpy
-
-
 def get_tranche_2(record):
     return record.INFO["TRANCHE2"]
 
