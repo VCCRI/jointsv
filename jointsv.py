@@ -20,7 +20,7 @@ class BndComparisonResult:
         self.final_position = final_position
 
 
-def process_record_list(key, record_list, sample_names_to_header):
+def process_record_list(key, record_list, sample_names):
     # Create as many columns as samples
     # Process SVs if possible
     # if not possible return raw BNDs
@@ -34,9 +34,9 @@ def process_record_list(key, record_list, sample_names_to_header):
         else:
             candidates.append(record)
     if record_comparison_response.is_sv:
-        output = [generate_sv_record(record_list, record_comparison_response, sample_names=sample_names_to_header.keys())]
+        output = [generate_sv_record(record_list, record_comparison_response, sample_names)]
     else:
-        output = generate_non_sv_records(record_list, sample_names=sample_names_to_header.keys())
+        output = generate_non_sv_records(record_list, sample_names)
     return output
 
 def compare_record_to_other_candidates(record, candidates):
@@ -207,8 +207,7 @@ def main(args):
     log_resource_consumption()
 
     # First, read all the data and group the records by CHROM + POS
-    (records, sample_names_to_header) = read_records_from_files(input_file_path_list, chromosome_set)
-    sample_names = sample_names_to_header.keys()
+    (records, sample_names) = read_records_from_files(input_file_path_list, chromosome_set)
 
     log_resource_consumption()
 
@@ -216,7 +215,7 @@ def main(args):
     logging.info("Processing %d co-located groups from %d samples", len(records), len(sample_names))
     output_records = []
     for key, colocated_records in records.items():
-        output_records.extend(process_record_list(key, colocated_records, sample_names_to_header))
+        output_records.extend(process_record_list(key, colocated_records, sample_names))
 
     log_resource_consumption()
 
