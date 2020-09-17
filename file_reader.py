@@ -19,8 +19,8 @@ class ChromosomeFilter(io.TextIOWrapper):
         io.TextIOWrapper.__init__(self, buffer)
         self.chromosome_set = chromosome_set
 
-    def readline(self):
-        line = self.buffer.readline()
+    def readline(self, **kwargs):
+        line = self.buffer.readline(**kwargs)
 
         # Return immediately if no filtering is to be applied
         if not self.chromosome_set:
