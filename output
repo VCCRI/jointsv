@@ -1,0 +1,11 @@
+##INFO=<ID=END,Number=1,Type=Integer,Description="Stop position of the interval">
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=TRANCHE2,Number=1,Type=String,Description="Quality category of GRIDSS structural variant calls determined using FILTER,SRQ,AS,RAS. Values are LOW INTERMEDIATE HIGH">
+##FORMAT=<ID=VAF,Number=1,Type=Float,Description="VAF of this SV call, derived from BNDVAF values of BND calls used to call this SV">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	SAMPLE1
+chr1	100	chr1_100	A	<INS>	.	.	SVTYPE=INS;END=100	GT:TRANCHE2:VAF	0/1:HIGH:0.5
+chr1	200	chr1_200	A	<INDEL>	.	.	SVTYPE=INDEL;END=300	GT:TRANCHE2:VAF	0/1:HIGH:0.5
+chr1	400	chr1_400	A	<DUP:INS>	.	.	SVTYPE=DUP:INS;END=500	GT:TRANCHE2:VAF	0/1:HIGH:0.5
+chr1	1000	chr1_1000	A	<SYMBOLIC>	.	.	SVTYPE=SYMBOLIC;END=2000	GT:TRANCHE2:VAF	0/1:HIGH:0.5
+chr1	3000	chr1_3000	A	<DUP:TANDEM>	.	.	SVTYPE=DUP:TANDEM;END=4000	GT:TRANCHE2:VAF	0/1:HIGH:0.5

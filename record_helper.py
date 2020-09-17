@@ -14,7 +14,11 @@ def get_start_position(record):
 
 
 def get_end_position(record):
-    return record.ALT[0].mate_pos
+    if hasattr(record.ALT[0], 'mate_pos'):
+        return record.ALT[0].mate_pos
+    if not record.INFO['END'] is None:
+        return record.INFO['END']
+    return None
 
 
 def is_trusted_record(record):
