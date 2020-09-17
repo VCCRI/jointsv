@@ -58,7 +58,7 @@ def read_records_from_files(file_path_list, chromosome_set=None):
     logging.info("Reading %d input files", len(all_file_paths))
 
     record_count = 0
-    sample_names = []
+    sample_name_to_header = {}
     for file_path in all_file_paths:
         gc.collect()
         logging.debug("Reading file '%s'", file_path)
@@ -68,7 +68,7 @@ def read_records_from_files(file_path_list, chromosome_set=None):
                 # Extract the sample name from the headers
                 assert len(reader.header.samples.names) == 1, "Only records with exactly 1 sample are supported"
                 sample_name = reader.header.samples.names[0]
-                sample_names.append(sample_name)
+                sample_name_to_header[sample_name] = reader.header
 
                 # Process each record in the file. Note that the VCFPy parser is a streaming parser. It does not hold
                 # the whole AST in memory, instead it goes record by record.
@@ -97,9 +97,9 @@ def read_records_from_files(file_path_list, chromosome_set=None):
                         record_count += 1
 
     logging.debug("Found %d records from %d samples and grouped them in %d co-located groups",
-                  record_count, len(sample_names), len(colocated_records_multimap))
+                  record_count, len(sample_name_to_header), len(colocated_records_multimap))
 
-    return colocated_records_multimap, sample_names
+    return colocated_records_multimap, sample_name_to_header
 
 
 def collect_all_file_names(file_path_list):

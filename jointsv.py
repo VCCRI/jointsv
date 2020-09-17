@@ -209,7 +209,8 @@ def main(args):
     log_resource_consumption()
 
     # First, read all the data and group the records by CHROM + POS
-    (records, sample_names) = read_records_from_files(input_file_path_list, chromosome_set)
+    (records, sample_name_to_header) = read_records_from_files(input_file_path_list, chromosome_set)
+    sample_names = sample_name_to_header.keys()
 
     log_resource_consumption()
 
@@ -236,7 +237,7 @@ def main(args):
                  len(record_accumulator),
                  output_file_path,
                  sv_calls)
-    write_output(record_accumulator, output_file_path, sample_names)
+    write_output(record_accumulator, output_file_path, sample_name_to_header, chromosome_set)
 
     log_resource_consumption()
     logging.info("JointSV finished successfully")
