@@ -84,8 +84,8 @@ def generate_sv_record(records, comparison_result, sample_names):
         ID=[id_of_new_record],
         REF=first_record_of_the_group.REF,  # by construction, all the grouped records have the same
         ALT=[vcfpy.Substitution(type_=comparison_result.svtype, value='<{}>'.format(comparison_result.svtype))],
-        QUAL=None,  # FIXME: what to use here
-        FILTER=[],  # FIXME: what to use here
+        QUAL=maximum_qual(records),
+        FILTER=["PASS"],
         INFO=info,
         FORMAT=["GT", "TRANCHE2", "VAF"],
         calls=calls)
@@ -105,6 +105,10 @@ def get_gt(original_bndvat):
         return "0/0"
     else:
         return "0/1"
+
+
+def maximum_qual(records):
+    return max([record.QUAL for record in records])
 
 
 def maximum_tranche(records):
@@ -185,8 +189,8 @@ def generate_non_sv_records(colocated_records, sample_names):
             ID=[id_of_new_record],
             REF=first_record_of_the_group.REF,  # by construction, all the grouped records have the same
             ALT=first_record_of_the_group.ALT,  # by construction, all the grouped records have the same
-            QUAL=None,  # FIXME: what to use here
-            FILTER=[],  # FIXME: what to use here
+            QUAL=maximum_qual(group),
+            FILTER=["PASS"],
             INFO=info,
             FORMAT=["GT", "TRANCHE2", "VAF"],
             calls=calls))
