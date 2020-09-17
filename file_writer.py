@@ -34,7 +34,7 @@ def get_header(sample_name_to_header, chromosome_set):
     """
     header = vcfpy.Header()
 
-    header.add_line(vcfpy.HeaderLine(key="fileformat", value="VCFv4.3"))
+    header.add_line(vcfpy.HeaderLine(key="fileformat", value="VCFv4.2"))
 
     # CONTIG headers
     first_sample_header = next(iter(sample_name_to_header.values()))
