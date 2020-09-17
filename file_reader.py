@@ -13,7 +13,7 @@ def read_records_from_files(file_path_list, chromosome_set):
     logging.info("Reading %d input files", len(all_file_paths))
 
     record_count = 0
-    sample_names_to_header = {}
+    sample_names = []
     for file_path in all_file_paths:
         gc.collect()
         logging.debug("Reading file '%s'", file_path)
@@ -22,10 +22,13 @@ def read_records_from_files(file_path_list, chromosome_set):
             # Extract the sample name from the headers
             assert len(reader.header.samples.names) == 1, "Only records with exactly 1 sample are supported"
             sample_name = reader.header.samples.names[0]
-            sample_names_to_header[sample_name] = reader.header
+            sample_names.append(sample_name)
 
             # Process each record in the file
             for record in reader:
+                # Improvement idea: instead of filtering by chromosome after the whole record has been parsed,
+                # the filtering could happen before parsing the whole record. Of course that can be accomplished
+                # with UNIX pipes, but it would be great to have a full Python solution.
                 if chromosome_set is None or record.CHROM in chromosome_set:
                     assert len(record.ID) == 1, "Only records with exactly 1 ID are supported"
                     assert len(record.ALT) == 1, "Only records with exactly 1 ALT are supported"
@@ -47,9 +50,9 @@ def read_records_from_files(file_path_list, chromosome_set):
                     record_count += 1
 
     logging.debug("Found %d records from %d samples and grouped them in %d co-located groups",
-                  record_count, len(sample_names_to_header), len(colocated_records_multimap))
+                  record_count, len(sample_names), len(colocated_records_multimap))
 
-    return colocated_records_multimap, sample_names_to_header
+    return colocated_records_multimap, sample_names
 
 
 def collect_all_file_names(file_path_list):
