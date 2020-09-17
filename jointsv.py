@@ -178,11 +178,11 @@ def generate_non_sv_records(colocated_records, sample_names):
         id_of_new_record = generate_id(first_record_of_the_group.CHROM, first_record_of_the_group.POS)
         info = vcfpy.OrderedDict()
         if "END" in first_record_of_the_group.INFO:
-            info["END"] = first_record_of_the_group.INFO[
-                "END"]  # by construction, all the grouped records have the same
+            # by construction, all the grouped records have the same
+            info["END"] = first_record_of_the_group.INFO["END"]
         if "INSSEQ" in first_record_of_the_group.INFO:
-            info["INSSEQ"] = first_record_of_the_group.INFO[
-                "INSSEQ"]  # by construction, all the grouped records have the same
+            # by construction, all the grouped records have the same
+            info["INSSEQ"] = first_record_of_the_group.INFO["INSSEQ"]
         output.append(vcfpy.Record(
             CHROM=first_record_of_the_group.CHROM,  # by construction, all the grouped records have the same
             POS=first_record_of_the_group.POS,  # by construction, all the grouped records have the same
