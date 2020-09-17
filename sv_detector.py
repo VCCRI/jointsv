@@ -131,3 +131,28 @@ def is_dup_ins_sv(record1, record2):
     ):
         return True
     return False
+
+
+def get_insseq_from_sv(record):
+    if "INSSEQ" in record.INFO:
+        return record.INFO["INSSEQ"]
+    return None
+
+
+def get_insseq_from_bnds(sv_type, record1, record2):
+    if sv_type in get_sv_type_that_require_insseq():
+        record_containing_the_insseq = record1
+        if record2.ALT[0].orientation == '-':
+            record_containing_the_insseq = record2
+        insseq = get_sequence(record_containing_the_insseq)
+        # Very defensive programming
+        if insseq is not None and len(insseq) > 1:
+            insseq = insseq[1:]
+            if get_start_position(record_containing_the_insseq) == get_end_position(record_containing_the_insseq):
+                insseq += get_ref(record_containing_the_insseq)
+        return insseq
+    return None
+
+
+def get_sv_type_that_require_insseq():
+    return ["INS", "INDEL", "DUP:INS"]

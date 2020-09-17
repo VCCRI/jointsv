@@ -12,6 +12,7 @@ import logging
 import resource
 import gc
 
+
 def process_record_list(key, record_list, sample_names):
     # Create as many columns as samples
     # Process SVs if possible
@@ -31,8 +32,8 @@ def process_record_list(key, record_list, sample_names):
         output = generate_non_sv_records(record_list, sample_names)
     return output
 
+
 def compare_record_to_other_candidates(record, candidates):
-    # TODO Some records will have the actual call in ALT, so we can't assume that mate_pos exists
     # We know that start position is the same and that the record is trusted
     return_obj = BndComparisonResult(False, None, None, None)
     for candidate_record in candidates:
@@ -41,11 +42,13 @@ def compare_record_to_other_candidates(record, candidates):
             return_obj.type = get_alt_type(record)
             return_obj.initial_position = get_start_position(record)
             return_obj.final_position = get_end_position(record)
+            return_obj.insseq = get_insseq_from_sv(record)
         if are_pair_records(record, candidate_record):
             return_obj.is_sv = True
             return_obj.type = extract_sv_type_from_record_pair(candidate_record, record)
             return_obj.initial_position = min(get_start_position(record), get_start_position(candidate_record))
             return_obj.final_position = max(get_end_position(record), get_end_position(candidate_record))
+            return_obj.insseq = get_insseq_from_bnds(return_obj.type, candidate_record, record)
     return return_obj
 
 
@@ -71,7 +74,8 @@ def generate_sv_record(records, comparison_result, sample_names):
     info = vcfpy.OrderedDict()
     info["SVTYPE"] = comparison_result.type
     info["END"] = comparison_result.final_position
-
+    if comparison_result.insseq is not None:
+        info["INSSEQ"] = comparison_result.insseq
     return vcfpy.Record(
         CHROM=chrom,  # by construction, all the grouped records have the same
         POS=comparison_result.initial_position,  # by construction, all the grouped records have the same

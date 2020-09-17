@@ -43,6 +43,11 @@ def get_header(sample_names):
         Number=1,
         Type="String",
         Description="Type of structural variant"))
+    header.add_info_line(vcfpy.OrderedDict(
+        ID="INSSEQ",
+        Number=1,
+        Type="String",
+        Description="Insertion sequence of structural variant, not including sequence marked as duplication"))
 
     # FORMAT fields
     header.add_format_line(vcfpy.OrderedDict(
@@ -60,6 +65,11 @@ def get_header(sample_names):
         Number=1,
         Type="Float",
         Description="VAF of this SV call, derived from BNDVAF values of BND calls used to call this SV"))
+    header.add_format_line(vcfpy.OrderedDict(
+        ID="INSSEQ",
+        Number=1,
+        Type="String",
+        Description="Insertion sequence of structural variant, not including sequence marked as duplication"))
 
     # Samples
     header.samples = vcfpy.SamplesInfos(sample_names)

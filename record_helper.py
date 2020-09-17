@@ -16,8 +16,8 @@ def get_start_position(record):
 def get_end_position(record):
     if hasattr(record.ALT[0], 'mate_pos'):
         return record.ALT[0].mate_pos
-    if not record.INFO['END'] is None:
-        return record.INFO['END']
+    if "END" in record.INFO:
+        return record.INFO["END"]
     return None
 
 
@@ -39,3 +39,6 @@ def get_sequence(record):
 
 def get_alt_type(record):
     return record.ALT[0].type
+
+def get_ref(record):
+    return record.REF
