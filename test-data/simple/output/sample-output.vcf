@@ -1,7 +1,7 @@
 ##fileformat=VCFv4.2
 ##contig=<ID=chr1,length=135086622>
-##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
 ##INFO=<ID=END,Number=1,Type=Integer,Description="Stop position of the interval">
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
 ##INFO=<ID=TRANCHE2,Number=1,Type=String,Description="Quality category of GRIDSS structural variant calls determined using FILTER,SRQ,AS,RAS. Values are LOW INTERMEDIATE HIGH">
 ##INFO=<ID=BNDVAF,Number=1,Type=Float,Description="VAF of this gridss-called BND calculated as (SR+RP+IC+AS)/(REF+SR+RP+IC+AS)">
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
@@ -9,6 +9,10 @@
 ##FORMAT=<ID=BNDVAF,Number=1,Type=Float,Description="VAF of this gridss-called BND calculated as (SR+RP+IC+AS)/(REFPAIR+SR+RP+IC+AS)">
 ##FORMAT=<ID=VAF,Number=1,Type=String,Description="VAF of this SV call, derived from BNDVAF values of BND calls used to call this SV">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	SAMPLE1	SAMPLE2	SAMPLE3	SAMPLE4	SAMPLE5
-chr1	1000	newId	G	<DEL>	SVTYPE=DEL;END=2000	GT:VAF:TRANCHE2 0/1:0.5:HIGH	0/1:0.65:HIGH	0/1:0.25:LOW	0/1:0.45:INTERMEDIATE	0/0:.:.
-chr1	1005	s5bnd1	G	A[chr1:2005[	SVTYPE=BND;TRANCHE2=LOW;BNDVAF=0.2	GT:TRANCHE2:BNDVAF	0/0:.:.	0/0:.:.	0/0:.:.	0/0:.:.	0/1:LOW:0.2
-chr1	2000	s5bnd2	C	]chr1:1005]G	SVTYPE=BND;TRANCHE2=LOW;BNDVAF=0.3	GT:TRANCHE2:BNDVAF	0/0:.:.	0/0:.:.	0/0:.:.	0/0:.:.	0/1:LOW:0.3
+chr1	100	chr1_100	A	<INS>	.	.	SVTYPE=INS;END=100;INSSEQ=TGA	GT:TRANCHE2:VAF	0/1:HIGH:0.5	.:.:.	.:.:.	.:.:.	.:.:.
+chr1	200	chr1_200	A	<INDEL>	.	.	SVTYPE=INDEL;END=300;INSSEQ=GG	GT:TRANCHE2:VAF	0/1:HIGH:0.5	.:.:.	.:.:.	.:.:.	.:.:.
+chr1	400	chr1_400	A	<DUP:INS>	.	.	SVTYPE=DUP:INS;END=500;INSSEQ=GT	GT:TRANCHE2:VAF	0/1:HIGH:0.5	.:.:.	.:.:.	.:.:.	.:.:.
+chr1	1000	chr1_1000	A	<DEL>	.	.	SVTYPE=DEL;END=2000	GT:TRANCHE2:VAF	0/1:HIGH:0.5	0/1:HIGH:0.6499999999999999	0/1:LOW:0.25	0/1:INTERMEDIATE:0.45	.:.:.
+chr1	1005	chr1_1005	A	A[chr1:2005[	.	.	SVTYPE=BND;TRANCHE2=LOW;BNDVAF=0.2	GT:TRANCHE2:VAF	.:.:.	.:.:.	.:.:.	.:.:.	0/1:LOW:0.2
+chr1	2005	chr1_2005	G	]chr1:1005]G	.	.	SVTYPE=BND;TRANCHE2=LOW;BNDVAF=0.3	GT:TRANCHE2:VAF	.:.:.	.:.:.	.:.:.	.:.:.	0/1:LOW:0.3
+chr1	3000	chr1_3000	A	<DUP:TANDEM>	.	.	SVTYPE=DUP:TANDEM;END=4000	GT:TRANCHE2:VAF	0/1:HIGH:0.5	.:.:.	.:.:.	.:.:.	.:.:.

@@ -3,7 +3,7 @@
 This data is designed to be the minimum input we could receive as input to the JointSV program that we can test the functionality with.
 
 There are 5 pieces of sample input:
-1. Has 2 BND records that can be called as a deletion SV on their own merit
+1. Has 10 BND records, corresponding to INS, INDEL, DUP:INS, DEL, and DUP:TANDEM calls that can be called on their own merit. 
 2. Has 2 BND records that can be called as a deletion SV on their own merit, but with intermediate confidence
 3. Has 2 BND records that are low confidence and therefore cannot be called on their own merit. However, they match with the records in #1 and #2 so should be called as SVs
 4. Has 1 BND record and therefore cannot be called on its own merit, but since it matches with the existing SVs in sample #1 and #2 it should also be called as an SV
@@ -11,6 +11,7 @@ There are 5 pieces of sample input:
 
 Based on this, the sample output should have:
 * One called DEL SV, which matches samples 1, 2, 3 and 4. It does not match sample 5.
+* One called INS, INDEL, DUP:INS, and DUP:TANDEM which matches sample 1, but no others
 * Two remaining BND records from sample 5
 
 ### Simplification of data
