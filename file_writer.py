@@ -59,7 +59,16 @@ def get_header(sample_name_to_header, chromosome_set):
         Number=1,
         Type="String",
         Description="Insertion sequence of structural variant, not including sequence marked as duplication"))
-
+    header.add_info_line(vcfpy.OrderedDict(
+        ID="TRANCHE2",
+        Number=1,
+        Type="String",
+        Description="Quality category of GRIDSS structural variant calls determined using FILTER,SRQ,AS,RAS. Values are LOW INTERMEDIATE HIGH"))
+    header.add_info_line(vcfpy.OrderedDict(
+        ID="BNDVAF",
+        Number=1,
+        Type="Float",
+        Description="VAF of this gridss-called BND calculated as (SR+RP+IC+AS)/(REF+SR+RP+IC+AS)"))
     # FORMAT fields
     header.add_format_line(vcfpy.OrderedDict(
         ID="GT",
@@ -71,6 +80,11 @@ def get_header(sample_name_to_header, chromosome_set):
         Number=1,
         Type="String",
         Description="Quality category of GRIDSS structural variant calls determined using FILTER,SRQ,AS,RAS. Values are LOW INTERMEDIATE HIGH"))
+    header.add_format_line(vcfpy.OrderedDict(
+        ID="BNDVAF",
+        Number=1,
+        Type="Float",
+        Description="VAF of this gridss-called BND calculated as (SR+RP+IC+AS)/(REFPAIR+SR+RP+IC+AS)"))
     header.add_format_line(vcfpy.OrderedDict(
         ID="VAF",
         Number=1,

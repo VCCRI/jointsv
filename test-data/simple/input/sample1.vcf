@@ -3,6 +3,7 @@
 ##contig=<ID=chr1,length=135086622>
 ##INFO=<ID=TRANCHE2,Number=1,Type=String,Description="Quality category of GRIDSS structural variant calls determined using FILTER,SRQ,AS,RAS. Values are LOW INTERMEDIATE HIGH">
 ##INFO=<ID=BNDVAF,Number=1,Type=Float,Description="VAF of this gridss-called BND calculated as (SR+RP+IC+AS)/(REF+SR+RP+IC+AS)">
+##FORMAT=<ID=INSSEQ,Number=.,Type=String,Description="Insertion sequence of structural variant, not including sequence marked as duplication">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	SAMPLE1
 chr1	100	s1bnd1	A	ATG[1:100[	.	.	SVTYPE=BND;TRANCHE2=HIGH;BNDVAF=0.5	.	.
 chr1	100	s1bnd1	A	]1:100]GTA	.	.	SVTYPE=BND;TRANCHE2=HIGH;BNDVAF=0.5	.	.
@@ -11,6 +12,8 @@ chr1	300	s1bnd1	A	]1:200]AAA	.	.	SVTYPE=BND;TRANCHE2=HIGH;BNDVAF=0.5	.	.
 chr1	400	s1bnd1	A	]1:500]GTA	.	.	SVTYPE=BND;TRANCHE2=HIGH;BNDVAF=0.5	.	.
 chr1	500	s1bnd1	A	AGT[1:400[	.	.	SVTYPE=BND;TRANCHE2=HIGH;BNDVAF=0.5	.	.
 chr1	1000	s1bnd1	A	A[chr1:2000[	.	.	SVTYPE=BND;TRANCHE2=HIGH;BNDVAF=0.5	.	.
+chr1	1000	chr1_1000	A	<DEL>	.	.	SVTYPE=DEL;END=2000;TRANCHE2=HIGH;BNDVAF=0.5	.	.
+chr1	1000	chr1_1002	A	<INS>	.	.	SVTYPE=DEL;END=2000;TRANCHE2=HIGH;BNDVAF=0.5;INSSEQ=AGTATACATTGCTAACATATGG	.	.
 chr1	2000	s1bnd2	G	]chr1:1000]G	.	.	SVTYPE=BND;TRANCHE2=HIGH;BNDVAF=0.5	.	.
 chr1	3000	s1bnd3	A	]chr1:4000]G	.	.	SVTYPE=BND;TRANCHE2=HIGH;BNDVAF=0.5	.	.
 chr1	4000	s1bnd4	G	A[chr1:3000[	.	.	SVTYPE=BND;TRANCHE2=HIGH;BNDVAF=0.5	.	.

@@ -2,12 +2,14 @@
 ##contig=<ID=chr1,length=135086622>
 ##INFO=<ID=END,Number=1,Type=Integer,Description="Stop position of the interval">
 ##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
+##INFO=<ID=INSSEQ,Number=1,Type=String,Description="Insertion sequence of structural variant, not including sequence marked as duplication">
 ##INFO=<ID=TRANCHE2,Number=1,Type=String,Description="Quality category of GRIDSS structural variant calls determined using FILTER,SRQ,AS,RAS. Values are LOW INTERMEDIATE HIGH">
 ##INFO=<ID=BNDVAF,Number=1,Type=Float,Description="VAF of this gridss-called BND calculated as (SR+RP+IC+AS)/(REF+SR+RP+IC+AS)">
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
 ##FORMAT=<ID=TRANCHE2,Number=1,Type=String,Description="Quality category of GRIDSS structural variant calls determined using FILTER,SRQ,AS,RAS. Values are LOW INTERMEDIATE HIGH">
 ##FORMAT=<ID=BNDVAF,Number=1,Type=Float,Description="VAF of this gridss-called BND calculated as (SR+RP+IC+AS)/(REFPAIR+SR+RP+IC+AS)">
-##FORMAT=<ID=VAF,Number=1,Type=String,Description="VAF of this SV call, derived from BNDVAF values of BND calls used to call this SV">
+##FORMAT=<ID=VAF,Number=1,Type=Float,Description="VAF of this SV call, derived from BNDVAF values of BND calls used to call this SV">
+##FORMAT=<ID=INSSEQ,Number=1,Type=String,Description="Insertion sequence of structural variant, not including sequence marked as duplication">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	SAMPLE1	SAMPLE2	SAMPLE3	SAMPLE4	SAMPLE5
 chr1	100	chr1_100	A	<INS>	.	.	SVTYPE=INS;END=100;INSSEQ=TGA	GT:TRANCHE2:VAF	0/1:HIGH:0.5	.:.:.	.:.:.	.:.:.	.:.:.
 chr1	200	chr1_200	A	<INDEL>	.	.	SVTYPE=INDEL;END=300;INSSEQ=GG	GT:TRANCHE2:VAF	0/1:HIGH:0.5	.:.:.	.:.:.	.:.:.	.:.:.
