@@ -108,7 +108,7 @@ def get_gt(original_bndvat):
 
 
 def maximum_qual(records):
-    return max([record.QUAL for record in records])
+    return max([record.QUAL for record in records if record.QUAL is not None], default=None)
 
 
 def maximum_tranche(records):
