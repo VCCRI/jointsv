@@ -26,6 +26,9 @@ def read_records_from_files(file_path_list, chromosome_set):
 
             # Process each record in the file
             for record in reader:
+                # Improvement idea: instead of filtering by chromosome after the whole record has been parsed,
+                # the filtering could happen before parsing the whole record. Of course that can be accomplished
+                # with UNIX pipes, but it would be great to have a full Python solution.
                 if chromosome_set is None or record.CHROM in chromosome_set:
                     assert len(record.ID) == 1, "Only records with exactly 1 ID are supported"
                     assert len(record.ALT) == 1, "Only records with exactly 1 ALT are supported"
