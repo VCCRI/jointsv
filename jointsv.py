@@ -3,7 +3,6 @@ import sys
 from argument_parser import parse_arguments
 from file_reader import read_records_from_files
 from file_writer import write_output
-from record_helper import *
 from sv_detector import *
 from generate import generate_sv_record, generate_non_sv_records
 from BndComparisonResult import BndComparisonResult
@@ -53,18 +52,6 @@ def compare_record_to_other_candidates(record, candidates):
     return return_obj
 
 
-def main(args):
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
-    args = parse_arguments(args)
-    input_file_path_list = args.files
-    output_file_path = args.output_file
-    chromosome_set = set(args.chromosome_list) if args.chromosome_list else None
-
-    logging.info("Starting JointSV")
-    jointsv(input_file_path_list, output_file_path, chromosome_set)
-    logging.info("JointSV finished successfully")
-
-
 def jointsv(input_file_path_list, output_file_path, chromosome_set):
     log_resource_consumption()
 
@@ -107,6 +94,18 @@ def log_resource_consumption():
                   str(resource.getrusage(resource.RUSAGE_SELF)),
                   str(gc.get_count()),
                   str(gc.get_stats()))
+
+
+def main(args):
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
+    args = parse_arguments(args)
+    input_file_path_list = args.files
+    output_file_path = args.output_file
+    chromosome_set = set(args.chromosome_list) if args.chromosome_list else None
+
+    logging.info("Starting JointSV")
+    jointsv(input_file_path_list, output_file_path, chromosome_set)
+    logging.info("JointSV finished successfully")
 
 
 if __name__ == "__main__":
