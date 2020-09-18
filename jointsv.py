@@ -40,7 +40,7 @@ def compare_record_to_other_candidates(record, candidates):
     return_obj = BndComparisonResult(False, None, None, None)
     if is_record_an_sv(record):
         return_obj.is_sv = True
-        return_obj.svtype = get_alt_type(record)
+        return_obj.svtype = get_sv_type_from_record(record)
         return_obj.initial_position = get_start_position(record)
         return_obj.final_position = get_end_position(record)
         return_obj.insseq = get_insseq_from_sv(record)

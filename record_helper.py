@@ -37,5 +37,14 @@ def get_sequence(record):
 def get_alt_type(record):
     return record.ALT[0].type
 
+
+def get_sv_type_from_record(record):
+    if 'SVTYPE' in record.INFO:
+        return record.INFO['SVTYPE']
+    if hasattr(record.ALT[0], 'value'):
+        return record.ALT[0].value
+    return type
+
+
 def get_ref(record):
     return record.REF
