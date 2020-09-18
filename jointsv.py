@@ -134,12 +134,16 @@ def get_sample_call(sample_name, records):
     call_data = vcfpy.OrderedDict.fromkeys(["GT", "TRANCHE2", "VAF"])
 
     if records:
-        average_vaf = mean([float(record.INFO["BNDVAF"]) for record in records])
+        average_vaf = get_average_vaf(records)
         call_data["GT"] = get_gt(average_vaf)
         call_data["TRANCHE2"] = maximum_tranche(records)
         call_data["VAF"] = average_vaf
 
     return vcfpy.Call(sample=sample_name, data=call_data)
+
+
+def get_average_vaf(records):
+    return mean([float(record.INFO["BNDVAF"]) for record in records])
 
 
 def generate_id(chrom, pos):
@@ -178,6 +182,9 @@ def generate_non_sv_records(colocated_records, sample_names):
         first_record_of_the_group = group[0]
         id_of_new_record = generate_id(first_record_of_the_group.CHROM, first_record_of_the_group.POS)
         info = vcfpy.OrderedDict()
+        info["SVTYPE"] = "BND"
+        info["TRANCHE2"] = maximum_tranche(group)
+        info["BNDVAF"] = get_average_vaf(group)
         if "END" in first_record_of_the_group.INFO:
             # by construction, all the grouped records have the same
             info["END"] = first_record_of_the_group.INFO["END"]
