@@ -1,4 +1,5 @@
 import vcfpy
+import sys
 
 
 def write_output(records, file_path, sample_name_to_header, chromosome_set):
@@ -17,7 +18,13 @@ def write_output(records, file_path, sample_name_to_header, chromosome_set):
     sorting_function = lambda record: (record.CHROM, record.POS)
     records.sort(key=sorting_function)
 
-    writer = vcfpy.Writer.from_path(file_path, header=get_header(sample_name_to_header, chromosome_set))
+    # Calculate the header of the output file
+    header = get_header(sample_name_to_header, chromosome_set)
+
+    if file_path == '-':
+        writer = vcfpy.Writer.from_stream(sys.stdout, header=header)
+    else:
+        writer = vcfpy.Writer.from_path(file_path, header=header)
 
     for output_record in records:
         writer.write_record(output_record)

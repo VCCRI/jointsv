@@ -48,6 +48,7 @@ $ python3 jointsv.py input/ -o output.vcf
   in which they appear in the command line.
 
 * `-o`/`--output FILE`: name of the output file. If omitted, the default is `output.vcf`.
+  If set to `-`, then the output is written to stdout.
 
 * `--chromosome chr3,chr7`: indicates which chromosomes are to be processed, as comma-separated values.
   If this parameter is omitted, all chromosomes are included.
