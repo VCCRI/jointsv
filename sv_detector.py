@@ -1,7 +1,6 @@
 from record_helper import *
 
 
-# Maybe name doesnt match the logic, but it's what we found so far
 def is_record_an_sv(record):
     return get_alt_type(record) != "BND"
 
@@ -138,7 +137,15 @@ def get_insseq_from_sv(record):
         return record.INFO["INSSEQ"]
     return None
 
-
+'''
+The INSSEQ is the last 2 characters in the record with ALT with this shape:
+    ]1:200]NNN
+We will also append the REF if the position in ALT is the same as the position of the record
+    #CHROM	POS	ALT REF
+    #1  100 ABC[1:200[ D -> INSSEQ = BC
+    #CHROM	POS	ALT REF
+    #2  100 ABC[1:100[ D -> INSSEQ = BCD
+'''
 def get_insseq_from_bnds(sv_type, record1, record2):
     if sv_type in get_sv_type_that_require_insseq():
         record_containing_the_insseq = record1

@@ -1,3 +1,9 @@
+"""
+This is a collection of methods that provides a friendly and streamlined interface to operate with the Record object.
+Please refrain from operating with the record object itself, it's best to create a method that does that and use the
+method itself, since we could change the behavior of the methods independently and these changes would be 'broadcasted'
+throughout the software.
+"""
 def get_tranche_2(record):
     return record.INFO["TRANCHE2"]
 
