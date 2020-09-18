@@ -38,19 +38,20 @@ def process_record_list(key, record_list, sample_names):
 def compare_record_to_other_candidates(record, candidates):
     # We know that start position is the same and that the record is trusted
     return_obj = BndComparisonResult(False, None, None, None)
-    for candidate_record in candidates:
-        if is_record_an_sv(record):
-            return_obj.is_sv = True
-            return_obj.svtype = get_alt_type(record)
-            return_obj.initial_position = get_start_position(record)
-            return_obj.final_position = get_end_position(record)
-            return_obj.insseq = get_insseq_from_sv(record)
-        if are_pair_records(record, candidate_record):
-            return_obj.is_sv = True
-            return_obj.svtype = extract_sv_type_from_record_pair(candidate_record, record)
-            return_obj.initial_position = min(get_start_position(record), get_start_position(candidate_record))
-            return_obj.final_position = max(get_end_position(record), get_end_position(candidate_record))
-            return_obj.insseq = get_insseq_from_bnds(return_obj.svtype, candidate_record, record)
+    if is_record_an_sv(record):
+        return_obj.is_sv = True
+        return_obj.svtype = get_alt_type(record)
+        return_obj.initial_position = get_start_position(record)
+        return_obj.final_position = get_end_position(record)
+        return_obj.insseq = get_insseq_from_sv(record)
+    else:
+        for candidate_record in candidates:
+            if are_pair_records(record, candidate_record):
+                return_obj.is_sv = True
+                return_obj.svtype = extract_sv_type_from_record_pair(candidate_record, record)
+                return_obj.initial_position = min(get_start_position(record), get_start_position(candidate_record))
+                return_obj.final_position = max(get_end_position(record), get_end_position(candidate_record))
+                return_obj.insseq = get_insseq_from_bnds(return_obj.svtype, candidate_record, record)
     return return_obj
 
 

@@ -62,6 +62,8 @@ def read_records_from_files(file_path_list, chromosome_set=None):
     for file_path in all_file_paths:
         gc.collect()
         logging.debug("Reading file '%s'", file_path)
+        if not file_path.endswith(".vcf"):
+            continue
         with open(file_path, "rt") as file:
             with vcfpy.Reader.from_stream(ChromosomeFilter(file, chromosome_set)) as reader:
 
