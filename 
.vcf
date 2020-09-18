@@ -1,0 +1,8 @@
+##fileformat=VCFv4.2
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
+##contig=<ID=chr1,length=135086622>
+##INFO=<ID=TRANCHE2,Number=1,Type=String,Description="Quality category of GRIDSS structural variant calls determined using FILTER,SRQ,AS,RAS. Values are LOW INTERMEDIATE HIGH">
+##INFO=<ID=BNDVAF,Number=1,Type=Float,Description="VAF of this gridss-called BND calculated as (SR+RP+IC+AS)/(REF+SR+RP+IC+AS)">
+##FORMAT=<ID=INSSEQ,Number=.,Type=String,Description="Insertion sequence of structural variant, not including sequence marked as duplication">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	SAMPLE1
+
