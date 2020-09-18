@@ -5,7 +5,6 @@ from jointsv import jointsv
 
 
 class TestJointSv(unittest.TestCase):
-    # TODO We should provide more meaningful test failure output, for example a diff between the files
     def test_simple(self):
         with io.StringIO() as actual_output_file:
             with redirect_stdout(actual_output_file):
