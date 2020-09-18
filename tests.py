@@ -4,6 +4,7 @@ import unittest
 
 class TestJointSv(unittest.TestCase):
     log = True
+
     # Pre clean former results if any
     def setUp(self):
         subprocess.run(['rm', '-rf', 'testoutput'])
@@ -30,43 +31,62 @@ class TestJointSv(unittest.TestCase):
                 self.assertCountEqual(expected_data_header, data_header)
                 number_of_samples = 5
                 position_of_first_sample = 9
-                sample_map = get_sample_mapping(number_of_samples, position_of_first_sample,expected_data_header,data_header)
+                sample_map = get_sample_mapping(number_of_samples, position_of_first_sample, expected_data_header,
+                                                data_header)
+                sample_name_map = get_sample_name_map(number_of_samples, position_of_first_sample, expected_data_header)
 
                 data_line_1 = output_file.readline().split('\t')
                 expected_data_line = expected_output_file.readline().split('\t')
+                while len(data_line_1) > 0 and len(expected_data_line) > 0:
+                    # Compare chromosome-position data
+                    for i in range(position_of_first_sample):
+                        logMessage('Compare ' + data_line_1[i] + " - " + expected_data_line[i])
+                        self.assertEqual(data_line_1[i], expected_data_line[i])
 
-                # Compare chromosome-position data
-                for i in range(position_of_first_sample):
-                    logMessage('Compare ' + data_line_1[i] + " - " + expected_data_line[i] )
-                    self.assertEqual(data_line_1[i], expected_data_line[i])
-                # Compare sample specific data
-                for i in range(position_of_first_sample):
-                    logMessage('Compare ' + data_line_1[i] + " - " + expected_data_line[i] )
-                    self.assertEqual(data_line_1[i], expected_data_line[i])
+                    # Compare sample specific data
+                    for i in range(position_of_first_sample, position_of_first_sample + number_of_samples):
+                        logMessage('Compare ' + data_line_1[sample_map[i]] + " - " + expected_data_line[i])
+                        self.assertEqual(data_line_1[sample_map[i]],
+                                         expected_data_line[i],
+                                         "The values " + data_line_1[sample_map[i]] + "and " + expected_data_line[
+                                             i] + "don't match for " + sample_name_map[i])
+                    data_line_1 = output_file.readline().split('\t')
+                    expected_data_line = expected_output_file.readline().split('\t')
 
     subprocess.run(['rm', '-rf', 'testoutput'])
+
 
 # Get sample mappings. We take the output one as reference. In the final output, the order of the samples
 # is not guaranteed, so we can't compare line by line. We'll use it as column mapping. If sample2 is in
 # column 10 in expected output and in 14 in the output file, the mapping will be 10->14
-def get_sample_mapping(number_of_samples, position_of_first_sample,expected_data_header,data_header):
+def get_sample_mapping(number_of_samples, position_of_first_sample, expected_data_header, data_header):
     sample_map = {}
     current_sample = 0
-    # For debugging and logging purposes
-    sample_names = {}
     while current_sample < number_of_samples:
         logMessage("Finding..." + expected_data_header[position_of_first_sample + current_sample])
-        sample_names[position_of_first_sample + current_sample] = expected_data_header[
-            position_of_first_sample + current_sample]
         position_of_sample_in_output_file = data_header.index(
             expected_data_header[position_of_first_sample + current_sample])
         sample_map[position_of_first_sample + current_sample] = position_of_sample_in_output_file
         current_sample += 1
     return sample_map
 
+
+# Get sample names in the expected in a position-name map
+def get_sample_name_map(number_of_samples, position_of_first_sample, expected_data_header):
+    current_sample = 0
+    # For debugging and logging purposes
+    sample_names = {}
+    while current_sample < number_of_samples:
+        sample_names[position_of_first_sample + current_sample] = expected_data_header[
+            position_of_first_sample + current_sample]
+        current_sample += 1
+    return sample_names
+
+
 def logMessage(message):
     if TestJointSv.log:
         print(message)
+
 
 def read_headers_from_file(file):
     header_list = []
