@@ -53,6 +53,21 @@ $ python3 jointsv.py input/ -o output.vcf
 * `--chromosome chr3,chr7`: indicates which chromosomes are to be processed, as comma-separated values.
   If this parameter is omitted, all chromosomes are included.
 
+## Running the tests
+
+We've integrated some tests in order to verify that when we change things in the code 
+we are not breaking the functionality of it with these changes.
+In order to run the tests, run the following command line:
+```shell script
+ pytest tests.py
+```
+If your python does not include pytest, 
+you can install it running the following command on your terminal:
+
+```shell script
+pip3 install pytest
+```
+
 # Contact
 
 Dr. Emma Rath - Victor Chang Cardiac Research Institute
