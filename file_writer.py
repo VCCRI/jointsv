@@ -29,7 +29,9 @@ def write_output(records, file_path, sample_name_to_header, chromosome_set):
     for output_record in records:
         writer.write_record(output_record)
 
-    writer.close()
+    # Only close the output if its a file
+    if file_path != '-':
+        writer.close()
 
 
 def get_header(sample_name_to_header, chromosome_set):
@@ -103,8 +105,8 @@ def get_header(sample_name_to_header, chromosome_set):
         Type="String",
         Description="Insertion sequence of structural variant, not including sequence marked as duplication"))
 
-    # Samples
+    # Samples, sorted to ensure determinism
     sample_names = sample_name_to_header.keys()
-    header.samples = vcfpy.SamplesInfos(sample_names)
+    header.samples = vcfpy.SamplesInfos(sorted(sample_names))
 
     return header

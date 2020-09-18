@@ -200,12 +200,17 @@ def generate_non_sv_records(colocated_records, sample_names):
 
 def main(args):
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
-    logging.info("Starting JointSV")
     args = parse_arguments(args)
     input_file_path_list = args.files
     output_file_path = args.output_file
     chromosome_set = set(args.chromosome_list) if args.chromosome_list else None
 
+    logging.info("Starting JointSV")
+    jointsv(input_file_path_list, output_file_path, chromosome_set)
+    logging.info("JointSV finished successfully")
+
+
+def jointsv(input_file_path_list, output_file_path, chromosome_set):
     log_resource_consumption()
 
     # First, read all the data and group the records by CHROM + POS
@@ -240,7 +245,6 @@ def main(args):
     write_output(record_accumulator, output_file_path, sample_name_to_header, chromosome_set)
 
     log_resource_consumption()
-    logging.info("JointSV finished successfully")
 
 
 def log_resource_consumption():
